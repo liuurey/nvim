@@ -1,0 +1,32 @@
+# Neovim 相关
+.netrwhist
+*~
+*.swp
+*.swo
+*.md
+
+# 环境变量和密钥文件
+.env
+*.env
+
+# 日志文件
+*.log
+
+# 缓存目录
+.cache/
+cache/
+
+# 插件管理器生成的文件
+plugin/packer_compiled.lua
+lazy-lock.json
+
+# 本地历史记录
+.history/
+
+# 备份文件
+*.bak
+*.backup
+
+# 系统文件
+.DS_Store
+Thumbs.db
