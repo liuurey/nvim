@@ -1,13 +1,16 @@
 -- 备份原配置: mv ~/.config/nvim ~/.config/nvim.bak
 -- 克隆配置: git clone https://github.com/LazyVim/starter ~/.config/nvim
 
-
+    
 -- require("core.theme")
 -- 自定义 LazyVim 配置
 require("config.lazy")
+
 -- 关闭 LazyVim 的导入顺序检查
 vim.g.lazyvim_check_order = false
 -- require("config.plugin_conflicts").setup()
+
+-- require("config.keybindings")
 
 -- 加载核心配置这部分lazyvim自动处理了
 -- require("config.options")
