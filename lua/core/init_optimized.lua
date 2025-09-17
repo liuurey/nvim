@@ -67,7 +67,7 @@ end
 
 -- 系统集成设置
 function M.setup_system_integration()
-    -- 设置剪贴板
+    -- 优化的剪贴板设置（修复 win32yank UTF-8 错误）
     if vim.fn.has('wsl') == 1 then
         vim.g.clipboard = {
             name = 'WslClipboard',
@@ -82,7 +82,24 @@ function M.setup_system_integration()
             cache_enabled = 0,
         }
     else
-        vim.opt.clipboard = "unnamedplus"
+        -- Windows 原生环境使用更稳定的剪贴板配置
+        if vim.fn.has('win32') == 1 then
+            vim.g.clipboard = {
+                name = 'WinClipboard',
+                copy = {
+                    ['+'] = 'powershell.exe -NoProfile -Command Set-Clipboard -Value $input',
+                    ['*'] = 'powershell.exe -NoProfile -Command Set-Clipboard -Value $input',
+                },
+                paste = {
+                    ['+'] = 'powershell.exe -NoProfile -Command "Get-Clipboard -Raw | Write-Host -NoNewline"',
+                    ['*'] = 'powershell.exe -NoProfile -Command "Get-Clipboard -Raw | Write-Host -NoNewline"',
+                },
+                cache_enabled = 0,
+            }
+        else
+            -- 其他系统使用默认设置
+            vim.opt.clipboard = "unnamedplus"
+        end
     end
     
     -- Windows 特定优化

@@ -30,3 +30,7 @@ lazy-lock.json
 # 系统文件
 .DS_Store
 Thumbs.db
+
+# # me
+# core/
+# backup/

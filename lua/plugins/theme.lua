@@ -149,7 +149,7 @@ return {
         },
         -- 集成配置
         integrations = {
-          cmp = true,
+          blink_cmp = true,  -- 使用 blink.cmp 而不是 nvim-cmp
           gitsigns = true,
           nvimtree = true,
           telescope = true,
@@ -391,7 +391,7 @@ return {
     end,
   },
 
-  -- OneDarkPro 主题
+  -- OneDarkPro 主题 (升级版)
   {
     "olimorris/onedarkpro.nvim",
     lazy = true,
@@ -404,55 +404,104 @@ return {
       end
       
       onedarkpro.setup({
-        colors = {}, -- 自定义颜色覆盖
-        highlights = {}, -- 自定义高亮覆盖
-        styles = {
-          types = "NONE",
-          methods = "NONE",
-          numbers = "NONE",
-          strings = "NONE",
-          comments = "italic",
-          keywords = "bold,italic",
-          constants = "NONE",
-          functions = "italic",
-          operators = "NONE",
-          variables = "NONE",
-          parameters = "NONE",
-          conditionals = "italic",
-          virtual_text = "NONE",
+        -- 自定义颜色覆盖 - 可以指定特定主题的颜色
+        colors = {
+          -- 全局颜色覆盖
+          -- red = "#FF6B6B",
+          -- green = "#51CF66",
+          
+          -- 按主题指定颜色
+          onedark = {
+            -- bg = "#1e2124", -- 更深的背景色
+          },
+          onelight = {
+            -- bg = "#fafafa", -- 更亮的背景色
+          },
+          onedark_vivid = {
+            -- 鲜艳主题的自定义颜色
+          },
+          onedark_dark = {
+            -- 深色主题的自定义颜色
+          },
+          vaporwave = {
+            -- 蒸汽波主题的自定义颜色
+          },
         },
+        
+        -- 自定义高亮组覆盖
+        highlights = {
+          -- 示例：自定义注释颜色
+          -- Comment = { fg = "${gray}", italic = true },
+          -- 示例：自定义错误高亮
+          -- Error = { fg = "${red}", bg = "${bg}", bold = true },
+        },
+        
+        -- 代码样式配置
+        styles = {
+          types = "NONE",              -- 类型样式
+          methods = "NONE",            -- 方法样式
+          numbers = "NONE",            -- 数字样式
+          strings = "NONE",            -- 字符串样式
+          comments = "italic",         -- 注释样式
+          keywords = "bold,italic",    -- 关键字样式
+          constants = "NONE",          -- 常量样式
+          functions = "italic",        -- 函数样式
+          operators = "NONE",          -- 操作符样式
+          variables = "NONE",          -- 变量样式
+          parameters = "NONE",         -- 参数样式
+          conditionals = "italic",     -- 条件语句样式
+          virtual_text = "NONE",       -- 虚拟文本样式
+        },
+        
+        -- 文件类型支持 (新增更多文件类型)
         filetypes = {
           c = true,
-          cpp = true,
-          cs = true,
+          comment = true,             -- 新增
+          go = true,                  -- 新增
+          html = true,                -- 新增
           java = true,
           javascript = true,
+          json = true,                -- 新增
+          latex = true,               -- 新增
           lua = true,
           markdown = true,
           php = true,
           python = true,
           ruby = true,
           rust = true,
+          scss = true,                -- 新增
+          toml = true,                -- 新增
           typescript = true,
+          typescriptreact = true,     -- 新增
           vue = true,
+          xml = true,                 -- 新增
           yaml = true,
         },
+        
+        -- 插件支持 (新增更多插件)
         plugins = {
           aerial = true,
           barbar = true,
+          blink_cmp = true,           -- 新增：新的补全插件
+          codecompanion = true,       -- 新增：AI 代码助手
           copilot = true,
           dashboard = true,
           flash_nvim = true,
+          gitgraph_nvim = true,       -- 新增：Git 图形化
           gitsigns = true,
           hop = true,
           indentline = true,
           leap = true,
           lsp_saga = true,
+          lsp_semantic_tokens = true, -- 新增：LSP 语义令牌支持
           marks = true,
+          mini_diff = true,           -- 新增：Mini.nvim diff
+          mini_icons = true,          -- 新增：Mini.nvim 图标
           mini_indentscope = true,
+          mini_test = true,           -- 新增：Mini.nvim 测试
           neotest = true,
           neo_tree = true,
-          nvim_cmp = true,
+          
           nvim_bqf = true,
           nvim_dap = true,
           nvim_dap_ui = true,
@@ -464,23 +513,65 @@ return {
           nvim_ts_rainbow = true,
           op_nvim = true,
           packer = true,
+          persisted = true,           -- 新增：会话持久化
           polygot = true,
           rainbow_delimiters = true,
+          render_markdown = true,     -- 新增：Markdown 渲染
           startify = true,
           telescope = true,
           toggleterm = true,
           treesitter = true,
           trouble = true,
           vim_ultest = true,
+          vim_dadbod_ui = true,       -- 新增：数据库 UI
           which_key = true,
         },
+        
+        -- 选项配置
         options = {
-          cursorline = false,
-          transparency = false,
-          terminal_colors = true,
-          lualine_transparency = false,
-          highlight_inactive_windows = false,
+          cursorline = false,                    -- 光标行高亮
+          transparency = false,                  -- 透明背景
+          terminal_colors = true,                -- 终端颜色
+          lualine_transparency = false,          -- Lualine 透明度
+          highlight_inactive_windows = false,    -- 非活动窗口高亮
         }
+      })
+      
+      -- 添加主题切换命令
+      vim.api.nvim_create_user_command("OneDarkProTheme", function(opts)
+        local theme = opts.args
+        if theme == "" then
+          theme = "onedark"
+        end
+        
+        local valid_themes = {
+          "onedark",
+          "onelight", 
+          "onedark_vivid",
+          "onedark_dark",
+          "vaporwave"
+        }
+        
+        local is_valid = false
+        for _, valid_theme in ipairs(valid_themes) do
+          if theme == valid_theme then
+            is_valid = true
+            break
+          end
+        end
+        
+        if is_valid then
+          vim.cmd.colorscheme(theme)
+          vim.notify("Switched to " .. theme, vim.log.levels.INFO)
+        else
+          vim.notify("Invalid theme. Available: " .. table.concat(valid_themes, ", "), vim.log.levels.ERROR)
+        end
+      end, {
+        nargs = "?",
+        complete = function()
+          return {"onedark", "onelight", "onedark_vivid", "onedark_dark", "vaporwave"}
+        end,
+        desc = "Switch OneDarkPro theme variant"
       })
     end,
   },
@@ -524,7 +615,12 @@ return {
           "nordfox",
           "terafox",
           "carbonfox",
-          "onedarkpro",
+          -- OneDarkPro 主题变体
+          "onedark",
+          "onelight",
+          "onedark_vivid",
+          "onedark_dark",
+          "vaporwave",
           "monokai_pro",
           "monet",
           "everforest",
@@ -566,10 +662,16 @@ return {
         vim.notify("Switched to GitHub Dark", vim.log.levels.INFO)
       end, { desc = "切换到 GitHub 主题" })
       
+      -- OneDarkPro 主题变体快捷键
       vim.keymap.set("n", "<leader>To", function()
-        pcall(vim.cmd.colorscheme, "onedarkpro")
-        vim.notify("Switched to OneDarkPro", vim.log.levels.INFO)
-      end, { desc = "切换到 OneDarkPro 主题" })
+        pcall(vim.cmd.colorscheme, "onedark")
+        vim.notify("Switched to OneDark", vim.log.levels.INFO)
+      end, { desc = "切换到 OneDark 主题" })
+      
+      vim.keymap.set("n", "<leader>Tw", function()
+        pcall(vim.cmd.colorscheme, "vaporwave")
+        vim.notify("Switched to Vaporwave", vim.log.levels.INFO)
+      end, { desc = "切换到 Vaporwave 主题" })
     end,
   },
 }

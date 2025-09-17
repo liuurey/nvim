@@ -10,7 +10,7 @@ require("config.lazy")
 vim.g.lazyvim_check_order = false
 -- require("config.plugin_conflicts").setup()
 
--- require("config.keybindings")
+require("config.keybindings")
 
 -- 加载核心配置这部分lazyvim自动处理了
 -- require("config.options")

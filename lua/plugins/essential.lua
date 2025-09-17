@@ -22,7 +22,7 @@ return {{
     'MeanderingProgrammer/render-markdown.nvim',
     ft = { 'markdown', 'md' },
     event = "BufReadPost *.md",
-    dependencies = {'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.icons' -- 可选，提供图标支持
+    dependencies = {'nvim-treesitter/nvim-treesitter', 'nvim-mini/mini.icons' -- 可选，提供图标支持
     },
     opts = {
         enabled = true,

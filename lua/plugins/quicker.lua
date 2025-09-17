@@ -1,25 +1,4 @@
-return {{
-    "folke/tokyonight.nvim",
-    lazy = false,
-    priority = 1000,
-    opts = {
-        style = "night",
-        transparent = true,
-        terminal_colors = true,
-        styles = {
-            comments = {
-                italic = true
-            },
-            keywords = {
-                italic = true
-            }
-        }
-    },
-    config = function(_, opts)
-        require("tokyonight").setup(opts)
-        vim.cmd.colorscheme("tokyonight")
-    end
-}, 
+return {
 -- 代码格式化
 ---------------------------------------------------------------------------
 {
@@ -28,16 +7,43 @@ return {{
     opts = {
         formatters_by_ft = {
             lua = {"stylua"},
-            python = {"black"},
-            javascript = {"prettierd", "prettier"},
-            typescript = {"prettierd", "prettier"},
-            html = {"prettierd", "prettier"},
-            css = {"prettierd", "prettier"}
+            python = {"ruff_format"},  -- 使用 ruff_format 解决用户名空格问题
+            javascript = {"prettier"},
+            typescript = {"prettier"},
+            html = {"prettier"},
+            css = {"prettier"}
         },
-        format_on_save = {
-            timeout_ms = 500,
-            lsp_fallback = true
-        }
+        -- 移除 format_on_save 配置，由 LazyVim 统一管理
+        
+        -- 针对用户名包含空格的修复（使用 PowerShell 包装）
+        formatters = {
+            ruff_format = {
+                -- 使用 PowerShell 包装命令，解决空格问题
+                command = "powershell.exe",
+                args = {
+                    "-NoProfile",
+                    "-Command",
+                    "& \"$env:LOCALAPPDATA\\nvim-data\\mason\\bin\\ruff.CMD\" format --stdin-filename '$env:FILENAME' -"
+                },
+                stdin = true,
+                env = {
+                    FILENAME = "$FILENAME",
+                },
+            },
+            black = {
+                -- 如果需要使用 black，使用 PowerShell 包装
+                command = "powershell.exe",
+                args = {
+                    "-NoProfile",
+                    "-Command",
+                    "& \"$env:LOCALAPPDATA\\nvim-data\\mason\\bin\\black.CMD\" --stdin-filename '$env:FILENAME' -"
+                },
+                stdin = true,
+                env = {
+                    FILENAME = "$FILENAME",
+                },
+            },
+        },
     }
 }, ---------------------------------------------------------------------------
 -- 语法高亮 & 缩进
@@ -46,20 +52,33 @@ return {{
     "nvim-treesitter/nvim-treesitter",
     event = {"BufReadPost", "BufNewFile"},
     build = ":TSUpdate",
+    dependencies = {
+        "nvim-treesitter/nvim-treesitter-textobjects",
+    },
     opts = {
         ensure_installed = {"bash", "c", "go", "html", "javascript", "json", "lua", "markdown", "markdown_inline",
                             "python", "rust", "typescript", "vimdoc", "vue"},
+        sync_install = false,
+        auto_install = true,
         highlight = {
             enable = true,
             additional_vim_regex_highlighting = false
         },
         indent = {
             enable = true
-        }
+        },
+        incremental_selection = {
+            enable = true,
+            keymaps = {
+                init_selection = "<C-space>",
+                node_incremental = "<C-space>",
+                scope_incremental = false,
+                node_decremental = "<bs>",
+            },
+        },
     },
-    config = function(_, opts)
-        require("nvim-treesitter.configs").setup(opts)
-    end
+    main = "nvim-treesitter.configs",
+    -- 现代 nvim-treesitter 配置方式：使用 main 指定模块
 }, ---------------------------------------------------------------------------
 -- 补全引擎
 ---------------------------------------------------------------------------

@@ -1,8 +1,9 @@
 return {
 {
-    "williamboman/mason.nvim",
+    "mason-org/mason.nvim",
+    version = "v2.0.1", -- 锁定最新稳定版本
     dependencies = {
-        "williamboman/mason-lspconfig.nvim",  -- LSP 安装集成
+        "mason-org/mason-lspconfig.nvim",     -- LSP 安装集成
         "mfussenegger/nvim-dap",              -- DAP 调试器核心
         "jay-babu/mason-nvim-dap.nvim",       -- DAP 调试器集成
         -- LazyVim 现在默认使用 conform.nvim 和 nvim-lint
@@ -14,7 +15,7 @@ return {
         { "<leader>cm", "<cmd>Mason<cr>", desc = "Mason 包管理器" },
     },
     opts = {
-        -- Mason 只负责基础工具安装，具体 LSP/DAP 配置由对应插件处理
+        -- 完整的工具安装列表，包含所有 example 中的配置
         ensure_installed = {
             -- 格式化工具
             "stylua",           -- Lua 格式化
@@ -25,17 +26,43 @@ return {
             "isort",            -- Python 导入排序
             "beautysh",         -- Bash 美化
             "clang-format",     -- C/C++/Java 格式化
-            "gofumpt",          -- Go 增强格式化
-            "rustfmt",          -- Rust 格式化
+            -- "gofumpt",          -- Go 增强格式化 (已禁用，暂不支持 Go 开发)
+            -- "rustfmt",          -- Rust 格式化 (已移除)
+            
+            -- LSP 服务器 (来自 example.lua)
+            "lua-language-server",          -- Lua
+            "pyright",                      -- Python 类型检查
+            -- "ruff-lsp",                     -- Python 快速 LSP (已移除)
+            "typescript-language-server",   -- TypeScript/JavaScript
+            -- "gopls",                        -- Go LSP 服务器 (已禁用，暂不支持 Go 开发)
+            "rust-analyzer",                -- Rust
+            "clangd",                       -- C/C++
+            "jdtls",                        -- Java
+            "html-lsp",                     -- HTML
+            "css-lsp",                      -- CSS
+            "bash-language-server",         -- Bash
+            "json-lsp",                     -- JSON
+            "yaml-language-server",         -- YAML
+            "dockerfile-language-server",   -- Dockerfile
+            "marksman",                     -- Markdown
+            "sqlls",                        -- SQL
+            
+            -- DAP 调试器 (统一管理，配合 mason-nvim-dap)
+            "debugpy",          -- Python 调试
+            "codelldb",         -- C/C++/Rust 调试
+            -- "delve",            -- Go 调试器 (已禁用，暂不支持 Go 开发)
+            "js-debug-adapter", -- JavaScript/TypeScript 调试
             
             -- Linter 和诊断工具
-            "shellcheck",       -- Shell 脚本检查
-            "flake8",           -- Python 代码检查
-            "hadolint",         -- Dockerfile 检查
-            "vale",             -- 文档和 Markdown 检查
-            "markdownlint",     -- Markdown 检查
-            "jsonlint",         -- JSON 检查
-            "yamllint",         -- YAML 检查
+            "eslint-lsp",                   -- JavaScript/TypeScript 代码检查
+            -- "golangci-lint-langserver",     -- Go 代码检查 (已禁用，暂不支持 Go 开发)
+            "shellcheck",                   -- Shell 脚本检查
+            "flake8",                       -- Python 代码检查
+            "hadolint",                     -- Dockerfile 检查
+            "vale",                         -- 文档和 Markdown 检查
+            "markdownlint",                 -- Markdown 检查
+            "jsonlint",                     -- JSON 检查
+            "yamllint",                     -- YAML 检查
         },
         max_concurrent_installers = 8,  -- 并行安装加速
         ui = {
@@ -78,60 +105,111 @@ return {
     config = function(_, opts)
         require("mason").setup(opts)
         
-        -- 配置 mason-lspconfig (使用正确的 LSP 服务器名称)
+        -- 配置 mason-lspconfig (整合所有 example 中的 LSP 服务器)
         require("mason-lspconfig").setup({
             ensure_installed = {
-                "lua_ls",           -- Lua
+                "lua_ls",           -- Lua (lua-language-server)
                 "pyright",          -- Python 类型检查
-                "ruff_lsp",         -- Python 快速 LSP
-                "tsserver",         -- TypeScript/JavaScript
-                "gopls",            -- Go
-                "rust_analyzer",    -- Rust
+               -- "ruff_lsp",         -- Python 快速 LSP (已移除，不再安装)
+                "ts_ls",            -- TypeScript/JavaScript (修复：从 tsserver 更名为 ts_ls)
+               -- "gopls",            -- Go LSP 服务器 (已禁用，暂不支持 Go 开发)
+                "rust_analyzer",    -- Rust (rust-analyzer)
                 "clangd",           -- C/C++
                 "jdtls",            -- Java
-                "html",             -- HTML
-                "cssls",            -- CSS
-                "bashls",           -- Bash
-                "jsonls",           -- JSON
-                "yamlls",           -- YAML
-                "dockerls",         -- Dockerfile
+                "html",             -- HTML (html-lsp)
+                "cssls",            -- CSS (css-lsp)
+                "bashls",           -- Bash (bash-language-server)
+                "jsonls",           -- JSON (json-lsp)
+                "yamlls",           -- YAML (yaml-language-server)
+                "dockerls",         -- Dockerfile (dockerfile-language-server)
                 "marksman",         -- Markdown
                 "sqlls",            -- SQL
                 "eslint",           -- JavaScript/TypeScript 代码检查
-                "golangci_lint_ls", -- Go 代码检查
+               -- "golangci_lint_ls", -- Go 代码检查 (已禁用，暂不支持 Go 开发)
             },
             automatic_installation = true,
+            -- 自动设置 LSP 服务器
+            handlers = {
+                -- 默认处理器
+                function(server_name)
+                    require("lspconfig")[server_name].setup({})
+                end,
+                
+                -- 特定服务器的自定义配置
+                ["lua_ls"] = function()
+                    require("lspconfig").lua_ls.setup({
+                        settings = {
+                            Lua = {
+                                runtime = { version = "LuaJIT" },
+                                diagnostics = { globals = { "vim" } },
+                                workspace = {
+                                    library = vim.api.nvim_get_runtime_file("", true),
+                                    checkThirdParty = false,
+                                },
+                                telemetry = { enable = false },
+                            },
+                        },
+                    })
+                end,
+                
+                ["pyright"] = function()
+                    require("lspconfig").pyright.setup({
+                        settings = {
+                            python = {
+                                analysis = {
+                                    typeCheckingMode = "basic",
+                                    autoSearchPaths = true,
+                                    useLibraryCodeForTypes = true,
+                                },
+                            },
+                        },
+                    })
+                end,
+                
+                -- 其他服务器的自定义配置 (来自 example.lua 的 opts.servers)
+                ["html"] = function() require("lspconfig").html.setup({}) end,
+                ["cssls"] = function() require("lspconfig").cssls.setup({}) end,
+                ["ts_ls"] = function() require("lspconfig").ts_ls.setup({}) end,  -- 修复：从 tsserver 更名为 ts_ls
+                ["rust_analyzer"] = function() require("lspconfig").rust_analyzer.setup({}) end,
+                -- ["gopls"] = function() require("lspconfig").gopls.setup({}) end,  -- 已禁用，暂不支持 Go 开发
+            },
         })
         
-        -- 配置 mason-nvim-dap
+        -- 配置 mason-nvim-dap (依赖 Mason 的统一安装，不重复安装)
         require("mason-nvim-dap").setup({
-            ensure_installed = {
-                "debugpy",          -- Python 调试
-                "codelldb",         -- C/C++/Rust 调试
-                "delve",            -- Go 调试
-                "js-debug-adapter", -- JavaScript/TypeScript 调试
+            -- 不再使用 ensure_installed，避免与 Mason 冲突
+            -- ensure_installed = {},  -- 由 Mason 的 opts.ensure_installed 统一管理
+            automatic_installation = false,  -- 禁用自动安装，避免冲突
+            handlers = {
+                -- 默认处理器：自动配置所有已安装的调试器
+                function(config)
+                    require('mason-nvim-dap').default_setup(config)
+                end,
             },
-            automatic_installation = true,
-            handlers = {},
         })
         
-        -- 自动安装配置
+        -- 优化的自动安装配置（避免重复安装冲突）
         local mr = require("mason-registry")
-        local function ensure_installed()
+        local function safe_ensure_installed()
             for _, tool in ipairs(opts.ensure_installed) do
                 local p = mr.get_package(tool)
-                if not p:is_installed() then
-                    p:install()
+                -- 只在包未安装且未在安装中时才安装
+                if not p:is_installed() and not p:is_installing() then
+                    vim.schedule(function()
+                        p:install()
+                    end)
                 end
             end
         end
         
-        -- 如果 Mason 已经准备好，立即安装
-        if mr.refresh then
-            mr.refresh(ensure_installed)
-        else
-            ensure_installed()
-        end
+        -- 延迟执行安装，避免初始化冲突
+        vim.defer_fn(function()
+            if mr.refresh then
+                mr.refresh(safe_ensure_installed)
+            else
+                safe_ensure_installed()
+            end
+        end, 1000)  -- 1秒延迟
     end,
 },
 }

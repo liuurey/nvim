@@ -33,35 +33,36 @@ local my_group = augroup("MyAutoCmds", {
 -- })
 
 --------------------------------------------------
--- 2. 自动格式化配置
+-- 2. 自动格式化配置 (由 LazyVim + conform.nvim 统一管理，避免重复配置)
 --------------------------------------------------
-autocmd("BufWritePre", {
-    group = my_group,
-    desc = "保存前自动使用LSP格式化代码",
-    pattern = {"*.lua", "*.py", "*.js", "*.ts", "*.jsx", "*.tsx", "*.go", "*.rs", "*.c", "*.cpp", "*.java", "*.json", "*.yaml", "*.yml"},
-    callback = function()
-        -- 获取文件大小，大文件使用异步格式化
-        local file_size = vim.fn.getfsize(vim.fn.expand('%'))
-        local use_async = file_size > 100000  -- 100KB以上使用异步格式化
-        
-        -- 仅在有可用LSP客户端时执行格式化
-        if #vim.lsp.get_active_clients({
-            bufnr = 0
-        }) > 0 then
-            -- 添加错误处理
-            local ok, err = pcall(function()
-                vim.lsp.buf.format({
-                    async = use_async
-                })
-            end)
-            
-            -- 格式化失败时通知用户
-            if not ok then
-                vim.notify("格式化失败: " .. tostring(err), vim.log.levels.WARN)
-            end
-        end
-    end
-})
+-- 注释掉手动的格式化自动命令，LazyVim 会自动处理
+-- autocmd("BufWritePre", {
+--     group = my_group,
+--     desc = "保存前自动使用LSP格式化代码",
+--     pattern = {"*.lua", "*.py", "*.js", "*.ts", "*.jsx", "*.tsx", "*.go", "*.rs", "*.c", "*.cpp", "*.java", "*.json", "*.yaml", "*.yml"},
+--     callback = function()
+--         -- 获取文件大小，大文件使用异步格式化
+--         local file_size = vim.fn.getfsize(vim.fn.expand('%'))
+--         local use_async = file_size > 100000  -- 100KB以上使用异步格式化
+--         
+--         -- 仅在有可用LSP客户端时执行格式化
+--         if #vim.lsp.get_active_clients({
+--             bufnr = 0
+--         }) > 0 then
+--             -- 添加错误处理
+--             local ok, err = pcall(function()
+--                 vim.lsp.buf.format({
+--                     async = use_async
+--                 })
+--             end)
+--             
+--             -- 格式化失败时通知用户
+--             if not ok then
+--                 vim.notify("格式化失败: " .. tostring(err), vim.log.levels.WARN)
+--             end
+--         end
+--     end
+-- })
 
 --------------------------------------------------
 -- 3. 折叠状态记忆与恢复
