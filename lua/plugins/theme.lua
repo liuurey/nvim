@@ -174,10 +174,7 @@ return {
       -- 安全设置配色方案
       local colorscheme_status_ok, _ = pcall(vim.cmd.colorscheme, "hardhacker")
       if not colorscheme_status_ok then
-        vim.notify("Failed to set hardhacker colorscheme, using default", vim.log.levels.WARN)
         vim.cmd.colorscheme("default")
-      else
-        vim.notify("HardHacker theme loaded as default", vim.log.levels.INFO)
       end
     end,
   },
@@ -562,7 +559,6 @@ return {
         
         if is_valid then
           vim.cmd.colorscheme(theme)
-          vim.notify("Switched to " .. theme, vim.log.levels.INFO)
         else
           vim.notify("Invalid theme. Available: " .. table.concat(valid_themes, ", "), vim.log.levels.ERROR)
         end
@@ -628,49 +624,42 @@ return {
         livePreview = true,
       })
 
-      -- 全局主题切换快捷键
+      -- 主题切换快捷键 - 使用统一前缀避免重复定义
+      -- 注意：这些键位映射会自动添加到 which-key 的 <leader>T 组中
       vim.keymap.set("n", "<leader>Tt", "<cmd>Themery<cr>", { desc = "打开主题选择器" })
       
       -- 直接使用 vim.cmd.colorscheme 切换主题（避免 Themery API 问题）
       vim.keymap.set("n", "<leader>Th", function()
         pcall(vim.cmd.colorscheme, "hardhacker")
-        vim.notify("Switched to HardHacker", vim.log.levels.INFO)
       end, { desc = "切换到 HardHacker 主题" })
       
       vim.keymap.set("n", "<leader>Tk", function()
         pcall(vim.cmd.colorscheme, "kanagawa-wave")
-        vim.notify("Switched to Kanagawa Wave", vim.log.levels.INFO)
       end, { desc = "切换到 Kanagawa 主题" })
       
       vim.keymap.set("n", "<leader>Tc", function()
         pcall(vim.cmd.colorscheme, "catppuccin-mocha")
-        vim.notify("Switched to Catppuccin Mocha", vim.log.levels.INFO)
       end, { desc = "切换到 Catppuccin 主题" })
       
       vim.keymap.set("n", "<leader>Tn", function()
         pcall(vim.cmd.colorscheme, "tokyonight-moon")
-        vim.notify("Switched to Tokyo Night Moon", vim.log.levels.INFO)
       end, { desc = "切换到 Tokyo Night 主题" })
       
       vim.keymap.set("n", "<leader>Tr", function()
         pcall(vim.cmd.colorscheme, "rose-pine")
-        vim.notify("Switched to Rose Pine", vim.log.levels.INFO)
       end, { desc = "切换到 Rose Pine 主题" })
       
       vim.keymap.set("n", "<leader>Tg", function()
         pcall(vim.cmd.colorscheme, "github_dark")
-        vim.notify("Switched to GitHub Dark", vim.log.levels.INFO)
       end, { desc = "切换到 GitHub 主题" })
       
       -- OneDarkPro 主题变体快捷键
       vim.keymap.set("n", "<leader>To", function()
         pcall(vim.cmd.colorscheme, "onedark")
-        vim.notify("Switched to OneDark", vim.log.levels.INFO)
       end, { desc = "切换到 OneDark 主题" })
       
       vim.keymap.set("n", "<leader>Tw", function()
         pcall(vim.cmd.colorscheme, "vaporwave")
-        vim.notify("Switched to Vaporwave", vim.log.levels.INFO)
       end, { desc = "切换到 Vaporwave 主题" })
     end,
   },

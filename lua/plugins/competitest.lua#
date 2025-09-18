@@ -1,5 +1,12 @@
-return{
+return{{
 	'xeluxee/competitest.nvim',
 	dependencies = 'MunifTanjim/nui.nvim',
 	config = function() require('competitest').setup() end,
+},{
+  'nullchilly/cpeditor.nvim',
+  config = function() 
+    require('cpeditor').setup() 
+  end,
+},
+ -- toggleterm.nvim,  cp.nvim
 }

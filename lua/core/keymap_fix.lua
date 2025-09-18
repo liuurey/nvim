@@ -24,7 +24,7 @@ function M.setup()
     -- 更新 which-key 组定义
     M.update_which_key_groups()
     
-    vim.notify("✅ 键位冲突修复完成", vim.log.levels.INFO)
+   
   end)
 end
 

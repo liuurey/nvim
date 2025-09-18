@@ -57,7 +57,7 @@ return {
     },
     opts = {
         ensure_installed = {"bash", "c", "go", "html", "javascript", "json", "lua", "markdown", "markdown_inline",
-                            "python", "rust", "typescript", "vimdoc", "vue"},
+                            "python", "rust", "typescript", "vimdoc", "vue", "latex"}, 
         sync_install = false,
         auto_install = true,
         highlight = {
@@ -80,54 +80,7 @@ return {
     main = "nvim-treesitter.configs",
     -- 现代 nvim-treesitter 配置方式：使用 main 指定模块
 }, ---------------------------------------------------------------------------
--- 补全引擎
----------------------------------------------------------------------------
---  {
---     "hrsh7th/nvim-cmp",
---     event = "InsertEnter",
---     dependencies = {"hrsh7th/cmp-nvim-lsp", "hrsh7th/cmp-buffer", "hrsh7th/cmp-path", "hrsh7th/cmp-emoji",
---                     "hrsh7th/cmp-cmdline", "L3MON4D3/LuaSnip", "saadparwaiz1/cmp_luasnip"},
---     opts = function()
---         local cmp = require("cmp")
---         return {
---             snippet = {
---                 expand = function(args)
---                     require("luasnip").lsp_expand(args.body)
---                 end
---             },
---             sources = cmp.config.sources({{
---                 name = "nvim_lsp"
---             }, {
---                 name = "luasnip"
---             }, {
---                 name = "emoji"
---             }}, {{
---                 name = "buffer"
---             }, {
---                 name = "path"
---             }}),
---             mapping = cmp.mapping.preset.insert({})
---         }
---     end,
---     config = function(_, opts)
---         local cmp = require("cmp")
---         cmp.setup(opts)
---         cmp.setup.cmdline("/", {
---             mapping = cmp.mapping.preset.cmdline(),
---             sources = {{
---                 name = "buffer"
---             }}
---         })
---         cmp.setup.cmdline(":", {
---             mapping = cmp.mapping.preset.cmdline(),
---             sources = cmp.config.sources({{
---                 name = "path"
---             }}, {{
---                 name = "cmdline"
---             }})
---         })
---     end
---  }, ---------------------------------------------------------------------------
+ ---------------------------------------------------------------------------
 -- 文件浏览器
 ---------------------------------------------------------------------------
 {

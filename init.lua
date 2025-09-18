@@ -12,8 +12,11 @@ vim.g.lazyvim_check_order = false
 
 require("config.keybindings")
 
+-- 加载 Krabby 配置
+-- require("config.krabby-config")
+
 -- 修复键位冲突
-require("core.keymap_conflicts_fix").setup()
+-- require("core.keymap_fix").setup()
 
 -- 加载核心配置这部分lazyvim自动处理了
 -- require("config.options")

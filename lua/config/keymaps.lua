@@ -33,7 +33,7 @@ keymap.set("i", "<C-u>", "<C-G>u<C-U>", { desc = "删除到行首" })
 
 -- ========== 视觉模式 ==========
 -- 快速退出视觉模式
-keymap.set("v", "<C-c>", "<ESC>", { desc = "退出视觉模式" })
+keymap.set("v", "jk", "<ESC>", { desc = "退出视觉模式" })
 
 -- 移动选中的行
 keymap.set("v", "J", ":m '>+1<CR>gv=gv", { desc = "向下移动选中行" })

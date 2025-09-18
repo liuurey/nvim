@@ -19,6 +19,6 @@ return{
     scroll = { enabled = true },
     statuscolumn = { enabled = true },
     words = { enabled = true },
-    image = { enabled = false },
+    image = { enabled = true }, -- 启用图像显示功能
   },
 }

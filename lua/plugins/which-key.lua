@@ -31,7 +31,7 @@ return {
       
       return true
     end,
-    -- 不在这里定义 spec，由 keybindings.lua 统一管理，避免重复
+    -- 防止重复定义组，只在这里定义基础结构，具体组由 keybindings.lua 管理
     spec = {},
     win = {
       border = "rounded",
@@ -45,6 +45,13 @@ return {
       scroll_up = "<c-u>",
     },
   },
+  -- 防止重复定义 which-key 组的配置
+  config = function(_, opts)
+    local wk = require("which-key")
+    wk.setup(opts)
+    
+    -- 这里不再定义任何组，全部由 keybindings.lua 统一管理，避免重复
+  end,
   keys = {
     {
       "<leader>?",
