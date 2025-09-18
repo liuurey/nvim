@@ -55,7 +55,7 @@ mv ~/.config/nvim ~/.config/nvim.backup
 
 ### 2. 克隆此配置
 ```bash
-git clone <your-repo-url> ~/.config/nvim
+git clone https://github.com/SantaChains/nvim.git ~/.config/nvim
 ```
 
 ### 3. 启动 Neovim
