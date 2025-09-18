@@ -3,34 +3,57 @@
 *~
 *.swp
 *.swo
-*.md
+plugin/packer_compiled.lua
+lazy-lock.json
+lsp.log
 
 # 环境变量和密钥文件
 .env
 *.env
+local_config.lua
+secrets.lua
 
 # 日志文件
 *.log
 
-# 缓存目录
+# 缓存目录与历史记录
 .cache/
 cache/
-
-# 插件管理器生成的文件
-plugin/packer_compiled.lua
-lazy-lock.json
-
-# 本地历史记录
 .history/
 
 # 备份文件
 *.bak
 *.backup
 
+# 临时文件
+*.tmp
+*.temp
+*.dSYM/
+
 # 系统文件
 .DS_Store
 Thumbs.db
 
-# # me
+# IDE 文件
+.vscode/
+.idea/
+
+# Node.js 相关
+node_modules/
+package-lock.json
+yarn.lock
+
+# Python 相关
+__pycache__/
+*.pyc
+*.pyo
+
+# 编译输出
+*.o
+*.so
+*.dll
+*.exe
+
+# 个人自定义（按需启用可移除注释）
 # core/
 # backup/
