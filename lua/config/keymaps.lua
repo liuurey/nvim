@@ -125,7 +125,7 @@ keymap.set("n", "<space>sk", "<cmd>Lspsaga diagnostic_jump_prev<CR>")
 -- 跳转到下一个诊断
 -- keymap.set("n", "<S-C-j>", "<cmd>lua vim.lsp.diagnostic.goto_next()<CR>")
 -- 格式化文档
-keymap.set("n", "<leader>f", "<cmd>lua vim.lsp.buf.format()<CR>")
+keymap.set("n", "<leader>F", "<cmd>lua vim.lsp.buf.format()<CR>")
 -- 建议操作
 -- keymap.set("n", "<leader>a", "<cmd>lua vim.lsp.buf.code_action()<CR>")
 -- keymap.set("n", "<leader>a", "<cmd>Lspsaga code_action<CR>")

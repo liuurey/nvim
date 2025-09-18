@@ -1,10 +1,9 @@
--- 现代化 LSP 配置文件 (基于最新官方最佳实践)
--- 支持 Neovim 0.10+ 的所有新功能
--- 注意: Go 语言支持已被注释 (gopls, gofumpt, delve 等工具因 GOSUMDB 问题暂时禁用)
--- 如需启用 Go 支持，请参考 docs/go-setup.md 手动安装相关工具
+-- LSP 配置 (基于 Neovim 0.11+ 和 nvim-lspconfig 2024 最新标准)
+-- 官方建议：使用 vim.lsp.enable() 而不是复杂的自定义配置
+-- 参考：https://github.com/neovim/nvim-lspconfig#quickstart
 
 return {
-  -- 现代化 LSP 配置
+  -- nvim-lspconfig：提供预配置的 LSP 服务器配置
   {
     "neovim/nvim-lspconfig",
     event = { "BufReadPre", "BufNewFile" },
@@ -26,6 +25,11 @@ return {
             { path = "lazy.nvim", words = { "Lazy" } },
           },
         },
+      },
+      -- 可选：JSON/YAML schema 支持
+      {
+        "b0o/schemastore.nvim",
+        lazy = true,
       },
     },
     
@@ -124,8 +128,7 @@ return {
             },
           },
           
-          -- 保留所有原有服务器
-          -- ruff = {},  -- 已移除，Python 快速检查工具
+          -- 保留所有原有服务器（移除已注释的 ruff）
           ts_ls = {
             settings = {
               typescript = {
@@ -268,7 +271,7 @@ return {
         vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, keymap_opts)
         vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, keymap_opts)
         vim.keymap.set("n", "gr", vim.lsp.buf.references, keymap_opts)
-        vim.keymap.set("n", "<leader>f", function()
+        vim.keymap.set("n", "<leader>F", function()
           vim.lsp.buf.format({ async = true })
         end, keymap_opts)
         
@@ -310,7 +313,11 @@ return {
           capabilities = capabilities,
         }, config)
         
+        -- 定义 LSP 配置
         vim.lsp.config(server, server_config)
+        
+        -- 启用 LSP 配置 (Neovim 0.11+ 必须显式启用)
+        vim.lsp.enable(server)
       end
     end,
   },

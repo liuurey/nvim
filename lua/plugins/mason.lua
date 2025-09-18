@@ -105,14 +105,12 @@ return {
     config = function(_, opts)
         require("mason").setup(opts)
         
-        -- 配置 mason-lspconfig (整合所有 example 中的 LSP 服务器)
+        -- 配置 mason-lspconfig (移除重复的 LSP 配置，由 lsp-config.lua 统一管理)
         require("mason-lspconfig").setup({
             ensure_installed = {
                 "lua_ls",           -- Lua (lua-language-server)
                 "pyright",          -- Python 类型检查
-               -- "ruff_lsp",         -- Python 快速 LSP (已移除，不再安装)
                 "ts_ls",            -- TypeScript/JavaScript (修复：从 tsserver 更名为 ts_ls)
-               -- "gopls",            -- Go LSP 服务器 (已禁用，暂不支持 Go 开发)
                 "rust_analyzer",    -- Rust (rust-analyzer)
                 "clangd",           -- C/C++
                 "jdtls",            -- Java
@@ -125,54 +123,10 @@ return {
                 "marksman",         -- Markdown
                 "sqlls",            -- SQL
                 "eslint",           -- JavaScript/TypeScript 代码检查
-               -- "golangci_lint_ls", -- Go 代码检查 (已禁用，暂不支持 Go 开发)
             },
-            automatic_installation = true,
-            -- 自动设置 LSP 服务器
-            handlers = {
-                -- 默认处理器
-                function(server_name)
-                    require("lspconfig")[server_name].setup({})
-                end,
-                
-                -- 特定服务器的自定义配置
-                ["lua_ls"] = function()
-                    require("lspconfig").lua_ls.setup({
-                        settings = {
-                            Lua = {
-                                runtime = { version = "LuaJIT" },
-                                diagnostics = { globals = { "vim" } },
-                                workspace = {
-                                    library = vim.api.nvim_get_runtime_file("", true),
-                                    checkThirdParty = false,
-                                },
-                                telemetry = { enable = false },
-                            },
-                        },
-                    })
-                end,
-                
-                ["pyright"] = function()
-                    require("lspconfig").pyright.setup({
-                        settings = {
-                            python = {
-                                analysis = {
-                                    typeCheckingMode = "basic",
-                                    autoSearchPaths = true,
-                                    useLibraryCodeForTypes = true,
-                                },
-                            },
-                        },
-                    })
-                end,
-                
-                -- 其他服务器的自定义配置 (来自 example.lua 的 opts.servers)
-                ["html"] = function() require("lspconfig").html.setup({}) end,
-                ["cssls"] = function() require("lspconfig").cssls.setup({}) end,
-                ["ts_ls"] = function() require("lspconfig").ts_ls.setup({}) end,  -- 修复：从 tsserver 更名为 ts_ls
-                ["rust_analyzer"] = function() require("lspconfig").rust_analyzer.setup({}) end,
-                -- ["gopls"] = function() require("lspconfig").gopls.setup({}) end,  -- 已禁用，暂不支持 Go 开发
-            },
+            -- 禁用自动安装和处理器，由 lsp-config.lua 统一管理
+            automatic_installation = false,
+            automatic_enable = false,  -- 禁用自动启用，由 lsp-config.lua 手动控制
         })
         
         -- 配置 mason-nvim-dap (依赖 Mason 的统一安装，不重复安装)

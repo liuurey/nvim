@@ -116,6 +116,7 @@ vim.schedule(function()
   wk.add({
     -- 主要功能组
     { "<leader>f", group = "file/find" },
+    { "<leader>F", group = "format" },  -- 添加格式化组
     { "<leader>w", group = "windows" },
     { "<leader>q", group = "quit/session" },
     { "<leader>l", group = "lsp" },
@@ -123,16 +124,158 @@ vim.schedule(function()
     { "<leader>G", group = "games" },
     { "<leader>T", group = "themes" },
     { "<leader>b", group = "buffers" },
+    { "<leader>?", group = "help/keymaps" },  -- 添加帮助组
     
     -- 单独功能
     { "<leader>n", desc = "通知历史" },
     { "<leader>D", desc = "Dashboard" },
     { "<leader>e", desc = "文件树" },
     { "<leader>uc", desc = "取消高亮" },
+    
+    -- 快捷键查看功能
+    { "<leader>?k", desc = "显示所有快捷键" },
+    { "<leader>?l", desc = "显示 Leader 快捷键" },
+    { "<leader>?c", desc = "检查快捷键冲突" },
   })
 end)
 
 -- ========== 修复 <Space> 前缀冲突 ==========
 -- 原问题：多个 <Space> 前缀存在子键冲突
 -- 解决方案：重新组织 <Space> 下的键位布局
+
+-- ========== 快捷键查看功能 ==========
+-- 统一的快捷键查看命令，支持查看所有模式的键位映射
+vim.api.nvim_create_user_command('ShowAllKeymaps', function(opts)
+  local modes = opts.args ~= "" and {opts.args} or {'n', 'i', 'v', 'x', 't', 'c'}
+  
+  for _, mode in ipairs(modes) do
+    local mode_name = {
+      n = "普通模式 (Normal)",
+      i = "插入模式 (Insert)", 
+      v = "可视模式 (Visual)",
+      x = "可视块模式 (Visual Block)",
+      t = "终端模式 (Terminal)",
+      c = "命令模式 (Command)",
+      o = "操作符模式 (Operator)",
+      s = "选择模式 (Select)"
+    }
+    
+    print("\n=== " .. (mode_name[mode] or mode:upper()) .. " ===")
+    
+    -- 获取该模式下的所有键位映射
+    local keymaps = vim.api.nvim_get_keymap(mode)
+    
+    if #keymaps > 0 then
+      -- 按键位排序
+      table.sort(keymaps, function(a, b)
+        return a.lhs < b.lhs
+      end)
+      
+      for _, keymap in ipairs(keymaps) do
+        local desc = keymap.desc or "无描述"
+        local rhs = keymap.rhs or keymap.callback and "<callback>" or "无定义"
+        
+        -- 格式化输出：键位 -> 命令/回调 (描述)
+        if keymap.lhs:match("^<leader>") then
+          -- 高亮 leader 键位
+          print(string.format("  🔑 %-20s -> %-30s (%s)", keymap.lhs, rhs, desc))
+        elseif keymap.lhs:match("^<C-") or keymap.lhs:match("^<A-") then
+          -- 高亮 Ctrl/Alt 键位
+          print(string.format("  ⚡ %-20s -> %-30s (%s)", keymap.lhs, rhs, desc))
+        else
+          print(string.format("     %-20s -> %-30s (%s)", keymap.lhs, rhs, desc))
+        end
+      end
+    else
+      print("  (无自定义键位映射)")
+    end
+  end
+end, {
+  nargs = '?',
+  complete = function()
+    return {'n', 'i', 'v', 'x', 't', 'c', 'o', 's'}
+  end,
+  desc = '显示所有或指定模式的键位映射'
+})
+
+-- 快速查看 Leader 键位的命令
+vim.api.nvim_create_user_command('ShowLeaderKeymaps', function()
+  print("\n=== Leader 键位映射总览 ===")
+  
+  local leader_keymaps = {}
+  local modes = {'n', 'i', 'v', 'x'}
+  
+  for _, mode in ipairs(modes) do
+    local keymaps = vim.api.nvim_get_keymap(mode)
+    for _, keymap in ipairs(keymaps) do
+      if keymap.lhs:match("^<leader>") then
+        table.insert(leader_keymaps, {
+          mode = mode,
+          lhs = keymap.lhs,
+          rhs = keymap.rhs or "<callback>",
+          desc = keymap.desc or "无描述"
+        })
+      end
+    end
+  end
+  
+  -- 按键位分组
+  table.sort(leader_keymaps, function(a, b)
+    if a.lhs == b.lhs then
+      return a.mode < b.mode
+    end
+    return a.lhs < b.lhs
+  end)
+  
+  local current_key = ""
+  for _, keymap in ipairs(leader_keymaps) do
+    if keymap.lhs ~= current_key then
+      current_key = keymap.lhs
+      print(string.format("\n🔑 %s", keymap.lhs))
+    end
+    print(string.format("  [%s] %s", keymap.mode:upper(), keymap.desc))
+  end
+end, { desc = '显示所有 Leader 键位映射' })
+
+-- 快速查看快捷键冲突的命令
+vim.api.nvim_create_user_command('CheckKeymapConflicts', function()
+  print("\n=== 键位冲突检查 ===")
+  
+  local all_keymaps = {}
+  local modes = {'n', 'i', 'v', 'x'}
+  
+  for _, mode in ipairs(modes) do
+    local keymaps = vim.api.nvim_get_keymap(mode)
+    for _, keymap in ipairs(keymaps) do
+      local key = mode .. ":" .. keymap.lhs
+      if all_keymaps[key] then
+        table.insert(all_keymaps[key], keymap)
+      else
+        all_keymaps[key] = {keymap}
+      end
+    end
+  end
+  
+  local conflicts_found = false
+  for key, maps in pairs(all_keymaps) do
+    if #maps > 1 then
+      conflicts_found = true
+      local mode, lhs = key:match("([^:]+):(.+)")
+      print(string.format("\n⚠️  冲突键位: %s (模式: %s)", lhs, mode:upper()))
+      for i, map in ipairs(maps) do
+        local desc = map.desc or "无描述"
+        print(string.format("  %d. %s", i, desc))
+      end
+    end
+  end
+  
+  if not conflicts_found then
+    print("✅ 未发现键位冲突")
+  end
+end, { desc = '检查键位映射冲突' })
+
+-- 设置快捷键
+keymap.set("n", "<leader>?k", "<cmd>ShowAllKeymaps<cr>", { desc = "显示所有快捷键" })
+keymap.set("n", "<leader>?l", "<cmd>ShowLeaderKeymaps<cr>", { desc = "显示 Leader 快捷键" })
+keymap.set("n", "<leader>?c", "<cmd>CheckKeymapConflicts<cr>", { desc = "检查快捷键冲突" })
 
