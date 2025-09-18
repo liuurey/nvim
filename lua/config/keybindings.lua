@@ -1,5 +1,5 @@
--- LazyVim 键位冲突统一修复配置
--- 解决 which-key 检查报告中的所有重叠和重复问题
+-- Neovim 键位配置优化 - 中文描述 + 冲突解决
+-- 统一所有键位描述为中文，避免功能重叠和按键冲突
 
 local keymap = vim.keymap
 local opts = { noremap = true, silent = true }
@@ -21,26 +21,27 @@ safe_unmap("n", "<leader>gol")
 safe_unmap("n", "<leader>golr")
 safe_unmap("n", "s")  -- 只清理如果被重新定义的 s
 
--- ========== 修复 LSP 相关冲突 ==========
--- 将原来分散在 g 系列的 LSP 功能统一到 <leader>l 前缀
-keymap.set("n", "<leader>lr", vim.lsp.buf.rename, { desc = "LSP: 重命名" })
-keymap.set("n", "<leader>la", vim.lsp.buf.code_action, { desc = "LSP: 代码操作" })
-keymap.set("n", "<leader>li", vim.lsp.buf.implementation, { desc = "LSP: 跳转到实现" })
-keymap.set("n", "<leader>lR", vim.lsp.buf.references, { desc = "LSP: 查找引用" })
-keymap.set("n", "<leader>ls", vim.lsp.buf.document_symbol, { desc = "LSP: 文档符号" })
-keymap.set("n", "<leader>lh", vim.lsp.buf.hover, { desc = "LSP: 悬停信息" })
-keymap.set("n", "<leader>ld", vim.lsp.buf.definition, { desc = "LSP: 跳转定义" })
-keymap.set("n", "<leader>lD", vim.lsp.buf.declaration, { desc = "LSP: 跳转声明" })
+-- ========== LSP 功能统一配置 ==========
+-- 统一 LSP 功能到 <leader>l 前缀，避免与其他功能冲突
+keymap.set("n", "<leader>lr", vim.lsp.buf.rename, { desc = "重命名符号" })
+keymap.set("n", "<leader>la", vim.lsp.buf.code_action, { desc = "代码操作" })
+keymap.set("n", "<leader>li", vim.lsp.buf.implementation, { desc = "跳转到实现" })
+keymap.set("n", "<leader>lR", vim.lsp.buf.references, { desc = "查找引用" })
+keymap.set("n", "<leader>ls", vim.lsp.buf.document_symbol, { desc = "文档符号" })
+keymap.set("n", "<leader>lh", vim.lsp.buf.hover, { desc = "悬停信息" })
+keymap.set("n", "<leader>ld", vim.lsp.buf.definition, { desc = "跳转到定义" })
+keymap.set("n", "<leader>lD", vim.lsp.buf.declaration, { desc = "跳转到声明" })
+keymap.set("n", "<leader>lf", function() vim.lsp.buf.format({ async = true }) end, { desc = "格式化代码" })
 
--- ========== 修复诊断相关冲突 ==========
--- 将诊断功能从 <leader>x 迁移到 <leader>d，解决 LazyVim 冲突
+-- ========== 诊断和调试功能 ==========
+-- 统一诊断功能到 <leader>d 前缀，与调试功能共存
 keymap.set("n", "<leader>dd", function()
   if LazyVim and LazyVim.has("trouble.nvim") then
     vim.cmd("Trouble diagnostics toggle")
   else
     vim.diagnostic.setloclist()
   end
-end, { desc = "诊断列表" })
+end, { desc = "诊断问题列表" })
 
 keymap.set("n", "<leader>db", function()
   if LazyVim and LazyVim.has("trouble.nvim") then
@@ -48,7 +49,7 @@ keymap.set("n", "<leader>db", function()
   else
     vim.diagnostic.setloclist()
   end
-end, { desc = "缓冲区诊断" })
+end, { desc = "当前缓冲区诊断" })
 
 keymap.set("n", "<leader>dq", function()
   if LazyVim and LazyVim.has("trouble.nvim") then
@@ -62,10 +63,15 @@ keymap.set("n", "<leader>dt", function()
   if LazyVim and LazyVim.has("trouble.nvim") then
     vim.cmd("Trouble todo toggle")
   end
-end, { desc = "Todo 列表" })
+end, { desc = "待办事项列表" })
 
--- ========== 修复游戏功能冲突 ==========
--- 将游戏功能从 <leader>gol 迁移到 <leader>G
+-- 诊断跳转
+keymap.set("n", "<leader>dj", vim.diagnostic.goto_next, { desc = "下一个诊断" })
+keymap.set("n", "<leader>dk", vim.diagnostic.goto_prev, { desc = "上一个诊断" })
+keymap.set("n", "<leader>de", vim.diagnostic.open_float, { desc = "显示诊断详情" })
+
+-- ========== 趣味游戏功能 ==========
+-- 整合娱乐功能到 <leader>G 前缀
 keymap.set("n", "<leader>Gl", function()
   if LazyVim and LazyVim.has("snacks.nvim") then
     Snacks.game.life()
@@ -74,7 +80,7 @@ keymap.set("n", "<leader>Gl", function()
   else
     vim.notify("未找到游戏插件", vim.log.levels.WARN)
   end
-end, { desc = "Game of Life" })
+end, { desc = "生命游戏" })
 
 keymap.set("n", "<leader>Gr", function()
   if LazyVim and LazyVim.has("snacks.nvim") then
@@ -84,66 +90,76 @@ keymap.set("n", "<leader>Gr", function()
   else
     vim.notify("未找到游戏插件", vim.log.levels.WARN)
   end
-end, { desc = "Make it Rain" })
+end, { desc = "代码雨动画" })
 
--- ========== 修复通知和高亮冲突 ==========
--- 保持 <leader>n 作为通知，但将取消高亮改为更直观的键位
+-- ========== 搜索和高亮控制 ==========
+-- 优化搜索高亮的管理
 keymap.set("n", "<Esc>", ":nohlsearch<CR>", { desc = "取消搜索高亮" })
--- 保留一个备用的取消高亮键位，但使用不冲突的键
-keymap.set("n", "<leader>uc", ":nohlsearch<CR>", { desc = "取消搜索高亮" })
+keymap.set("n", "<leader>nh", ":nohlsearch<CR>", { desc = "取消搜索高亮" })
 
--- ========== 修复 Dashboard 冲突 ==========
--- 将 Dashboard 从 s 移动到专用键位
+-- ========== 仪表盘和启动页 ==========
+-- Dashboard 启动页快捷访问
 keymap.set("n", "<leader>D", function()
   if LazyVim and LazyVim.has("dashboard-nvim") then
     vim.cmd("Dashboard")
   elseif LazyVim and LazyVim.has("alpha-nvim") then
     vim.cmd("Alpha")
   else
-    vim.notify("No dashboard plugin found", vim.log.levels.WARN)
+    vim.notify("未找到仪表盘插件", vim.log.levels.WARN)
   end
-end, { desc = "打开 Dashboard" })
+end, { desc = "打开仪表盘" })
 
--- ========== 统一 Which-key 配置 ==========
+-- ========== which-key 组统一配置 ==========
 -- 延迟加载 which-key 配置以确保插件已加载
+-- 只定义必要的自定义组，避免与 LazyVim 默认组重复
 vim.schedule(function()
   local ok, wk = pcall(require, "which-key")
   if not ok then
     return
   end
 
-  -- 统一定义所有组，避免重复
+  -- 只添加 LazyVim 中不存在的自定义组
   wk.add({
-    -- 主要功能组
-    { "<leader>f", group = "file/find" },
-    { "<leader>F", group = "format" },  -- 添加格式化组
-    { "<leader>w", group = "windows" },
-    { "<leader>q", group = "quit/session" },
-    { "<leader>l", group = "lsp" },
-    { "<leader>d", group = "diagnostics" },
-    { "<leader>G", group = "games" },
-    { "<leader>T", group = "themes" },
-    { "<leader>b", group = "buffers" },
-    { "<leader>?", group = "help/keymaps" },  -- 添加帮助组
+    -- Python 调试专用组（使用 py 前缀避免冲突）
+    { "<leader>py", group = "🐍 Python调试" },
     
-    -- 单独功能
-    { "<leader>n", desc = "通知历史" },
-    { "<leader>D", desc = "Dashboard" },
-    { "<leader>e", desc = "文件树" },
-    { "<leader>uc", desc = "取消高亮" },
+    -- 趣味游戏功能组
+    { "<leader>G", group = "🎮 趣味游戏" },
     
-    -- 快捷键查看功能
-    { "<leader>?k", desc = "显示所有快捷键" },
-    { "<leader>?l", desc = "显示 Leader 快捷键" },
-    { "<leader>?c", desc = "检查快捷键冲突" },
+    -- 主题切换组
+    { "<leader>T", group = "🎨 主题切换" },
   })
 end)
 
--- ========== 修复 <Space> 前缀冲突 ==========
--- 原问题：多个 <Space> 前缀存在子键冲突
--- 解决方案：重新组织 <Space> 下的键位布局
+-- ========== 移除冲突的 Space 键位 ==========
+-- 移除与 LazyVim 默认键位冲突的 <Space> 前缀映射
+local function remove_conflicting_space_keymaps()
+  -- 移除与 <Space>l (Lazy) 冲突的 LSP 键位
+  local space_l_keys = {
+    "<space>lf", "<space>ls", "<space>li", "<space>ld", 
+    "<space>lr", "<space>la", "<space>lR", "<space>lh", "<space>lD"
+  }
+  
+  -- 移除与 <Space>e (Explorer) 冲突的键位
+  local space_e_keys = { "<space>ev", "<space>ec" }
+  
+  -- 移除与 <Space>n (Notification) 冲突的键位
+  local space_n_keys = { "<space>nh" }
+  
+  local all_conflicting_keys = {}
+  vim.list_extend(all_conflicting_keys, space_l_keys)
+  vim.list_extend(all_conflicting_keys, space_e_keys)
+  vim.list_extend(all_conflicting_keys, space_n_keys)
+  
+  for _, key in ipairs(all_conflicting_keys) do
+    pcall(vim.keymap.del, "n", key)
+  end
+end
 
--- ========== 快捷键查看功能 ==========
+-- 立即执行清理
+remove_conflicting_space_keymaps()
+
+-- ========== 帮助和诊断工具 ==========
 -- 统一的快捷键查看命令，支持查看所有模式的键位映射
 vim.api.nvim_create_user_command('ShowAllKeymaps', function(opts)
   local modes = opts.args ~= "" and {opts.args} or {'n', 'i', 'v', 'x', 't', 'c'}
@@ -173,7 +189,7 @@ vim.api.nvim_create_user_command('ShowAllKeymaps', function(opts)
       
       for _, keymap in ipairs(keymaps) do
         local desc = keymap.desc or "无描述"
-        local rhs = keymap.rhs or keymap.callback and "<callback>" or "无定义"
+        local rhs = keymap.rhs or keymap.callback and "<回调函数>" or "无定义"
         
         -- 格式化输出：键位 -> 命令/回调 (描述)
         if keymap.lhs:match("^<leader>") then
@@ -198,7 +214,7 @@ end, {
   desc = '显示所有或指定模式的键位映射'
 })
 
--- 快速查看 Leader 键位的命令
+-- Leader 键位总览命令
 vim.api.nvim_create_user_command('ShowLeaderKeymaps', function()
   print("\n=== Leader 键位映射总览 ===")
   
@@ -212,7 +228,7 @@ vim.api.nvim_create_user_command('ShowLeaderKeymaps', function()
         table.insert(leader_keymaps, {
           mode = mode,
           lhs = keymap.lhs,
-          rhs = keymap.rhs or "<callback>",
+          rhs = keymap.rhs or "<回调函数>",
           desc = keymap.desc or "无描述"
         })
       end
@@ -235,47 +251,51 @@ vim.api.nvim_create_user_command('ShowLeaderKeymaps', function()
     end
     print(string.format("  [%s] %s", keymap.mode:upper(), keymap.desc))
   end
-end, { desc = '显示所有 Leader 键位映射' })
+end, { desc = '显示所有Leader键位映射' })
 
--- 快速查看快捷键冲突的命令
-vim.api.nvim_create_user_command('CheckKeymapConflicts', function()
-  print("\n=== 键位冲突检查 ===")
-  
-  local all_keymaps = {}
-  local modes = {'n', 'i', 'v', 'x'}
-  
-  for _, mode in ipairs(modes) do
-    local keymaps = vim.api.nvim_get_keymap(mode)
-    for _, keymap in ipairs(keymaps) do
-      local key = mode .. ":" .. keymap.lhs
-      if all_keymaps[key] then
-        table.insert(all_keymaps[key], keymap)
-      else
-        all_keymaps[key] = {keymap}
-      end
-    end
+-- 快捷键冲突检查命令
+-- ========== 用户命令 ==========
+-- 清理通知命令
+vim.api.nvim_create_user_command('ClearNotifications', function()
+  -- 清理所有通知
+  if vim.notify and vim.notify.dismiss then
+    vim.notify.dismiss()
   end
   
-  local conflicts_found = false
-  for key, maps in pairs(all_keymaps) do
-    if #maps > 1 then
-      conflicts_found = true
-      local mode, lhs = key:match("([^:]+):(.+)")
-      print(string.format("\n⚠️  冲突键位: %s (模式: %s)", lhs, mode:upper()))
-      for i, map in ipairs(maps) do
-        local desc = map.desc or "无描述"
-        print(string.format("  %d. %s", i, desc))
-      end
-    end
-  end
+  -- 清理 messages
+  vim.cmd('messages clear')
   
-  if not conflicts_found then
-    print("✅ 未发现键位冲突")
-  end
-end, { desc = '检查键位映射冲突' })
+  -- 清理屏幕
+  vim.cmd('redraw!')
+  
+  print("✅ 所有通知已清理")
+end, { desc = '清理所有通知和消息' })
 
--- 设置快捷键
-keymap.set("n", "<leader>?k", "<cmd>ShowAllKeymaps<cr>", { desc = "显示所有快捷键" })
-keymap.set("n", "<leader>?l", "<cmd>ShowLeaderKeymaps<cr>", { desc = "显示 Leader 快捷键" })
-keymap.set("n", "<leader>?c", "<cmd>CheckKeymapConflicts<cr>", { desc = "检查快捷键冲突" })
+-- 清理并检查键位命令
+vim.api.nvim_create_user_command('CleanCheckKeymap', function()
+  -- 清理通知
+  vim.cmd('ClearNotifications')
+  
+  -- 等待一秒然后检查 which-key
+  vim.defer_fn(function()
+    vim.cmd('checkhealth which-key')
+  end, 1000)
+end, { desc = '清理通知并检查which-key状态' })
+
+-- ========== 基本功能键位 ==========
+-- 只保留与 LazyVim 不冲突的必要键位
+
+-- 搜索高亮管理（保留主要功能）
+keymap.set("n", "<Esc>", ":nohlsearch<CR>", { desc = "取消搜索高亮" })
+keymap.set("n", "<leader>nh", ":nohlsearch<CR>", { desc = "💡 取消搜索高亮" })
+
+-- 快速编辑配置文件（避免与 <space>e 冲突）
+keymap.set("n", "<leader>ec", function()
+  vim.cmd("edit " .. vim.fn.stdpath("config") .. "/init.lua")
+end, { desc = "⚙️ 编辑配置文件" })
+
+keymap.set("n", "<leader>sv", function()
+  vim.cmd("source " .. vim.fn.stdpath("config") .. "/init.lua")
+  vim.notify("✅ 配置文件已重新加载")
+end, { desc = "🔄 重新加载配置" })
 

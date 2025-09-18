@@ -50,6 +50,7 @@ return {
             -- DAP 调试器 (统一管理，配合 mason-nvim-dap)
             "debugpy",          -- Python 调试
             "codelldb",         -- C/C++/Rust 调试
+            "cpptools",         -- C/C++ 调试 (Microsoft C/C++ Extension)
             -- "delve",            -- Go 调试器 (已禁用，暂不支持 Go 开发)
             "js-debug-adapter", -- JavaScript/TypeScript 调试
             

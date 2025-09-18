@@ -31,7 +31,7 @@ return {
       
       return true
     end,
-    -- 不在这里定义 spec，由 keybindings.lua 统一管理
+    -- 不在这里定义 spec，由 keybindings.lua 统一管理，避免重复
     spec = {},
     win = {
       border = "rounded",

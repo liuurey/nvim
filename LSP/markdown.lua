@@ -1,4 +1,8 @@
-vim.lsp.enable 'marksman'
+-- Markdown 文件类型特定配置
+-- 注意：这里不需要再次启用 LSP，因为 lsp-config.lua 已统一管理
+-- 只处理文件类型特有的设置
+
+-- Markdown 特有的显示设置
 vim.o.wrap = false
 vim.opt.conceallevel = 2
 vim.keymap.set('n', 'gx', function()

@@ -1,5 +1,5 @@
--- 优化后的键位映射配置
--- 解决冲突，符合普通用户习惯
+-- 优化后的键位映射配置 - 中文描述版
+-- 统一中文描述，解决冲突，符合普通用户使用习惯
 
 local keymap = vim.keymap
 local opts = { noremap = true, silent = true }
@@ -60,7 +60,7 @@ keymap.set("n", "<A-l>", ":bnext<CR>", { desc = "下一个缓冲区" })
 keymap.set("n", "<A-h>", ":bprevious<CR>", { desc = "上一个缓冲区" })
 keymap.set("n", "<A-w>", ":bdelete<CR>", { desc = "关闭当前缓冲区" })
 
--- 窗口管理
+-- 窗口管理（保留与 keybindings.lua 不冲突的键位）
 keymap.set("n", "<leader>sv", "<C-w>v", { desc = "垂直分割窗口" })
 keymap.set("n", "<leader>sh", "<C-w>s", { desc = "水平分割窗口" })
 keymap.set("n", "<leader>sc", "<C-w>c", { desc = "关闭当前窗口" })
@@ -78,8 +78,8 @@ keymap.set("n", "<A-Right>", "<C-w>>", { desc = "增加窗口宽度" })
 keymap.set("n", "<A-Up>", "<C-w>+", { desc = "增加窗口高度" })
 keymap.set("n", "<A-Down>", "<C-w>-", { desc = "减小窗口高度" })
 
--- 搜索相关
-keymap.set("n", "<leader>nh", ":nohl<CR>", { desc = "取消高亮" })
+-- 搭索相关（保留与 keybindings.lua 不重复的功能）
+-- keymap.set("n", "<leader>nh", ":nohl<CR>", { desc = "取消高亮" })  -- 已在 keybindings.lua 中定义
 keymap.set("n", "n", "nzzzv", { desc = "下一个搜索结果并居中" })
 keymap.set("n", "N", "Nzzzv", { desc = "上一个搜索结果并居中" })
 
@@ -95,104 +95,57 @@ keymap.set("n", "k", "gk", { desc = "向上移动（包括换行）" })
 keymap.set("n", "H", "^", { desc = "跳转到行首" })
 keymap.set("n", "L", "$", { desc = "跳转到行尾" })
 
--- 终端
-keymap.set("n", "<leader>t", function()
+-- 终端（避免与 keybindings.lua 中 <leader>T 冲突）
+-- 使用不同的键位映射来避免重复
+keymap.set("n", "<leader>tt", function()
     vim.cmd("split | terminal")
     vim.cmd("resize 15")
-end, { desc = "打开终端" })
+end, { desc = "💻 打开终端横向分割" })
 
 -- 退出终端模式
 keymap.set("t", "<Esc>", "<C-\\><C-n>", { desc = "退出终端模式" })
 
--- 跳转到声明
-keymap.set("n", "gD", "<cmd>lua vim.lsp.buf.declaration()<CR>")
--- 跳转到定义
--- keymap.set("n", "gd", "<cmd>lua vim.lsp.buf.definition()<CR>")
-keymap.set("n", "gd", "<cmd>Lspsaga peek_definition<CR>")
--- 跳转到实现
-keymap.set("n", "gi", "<cmd>lua vim.lsp.buf.implementation()<CR>")
--- 跳转到类型定义
--- keymap.set("n", "<space>D", "<cmd>lua vim.lsp.buf.type_definition()<CR>")
-keymap.set("n", "<space>D", "<cmd>Lspsaga peek_type_definition<CR>")
--- 重命名
-keymap.set("n", "<space>rn", "<cmd>lua vim.lsp.buf.rename()<CR>")
--- 查找引用
-keymap.set("n", "gr", "<cmd>lua vim.lsp.buf.references()<CR>")
--- 显示行诊断信息
-keymap.set("n", "<space>sd", "<cmd>lua vim.diagnostic.setloclist()<CR>")
-keymap.set("n", "<space>sj", "<cmd>Lspsaga diagnostic_jump_next<CR>")
-keymap.set("n", "<space>sk", "<cmd>Lspsaga diagnostic_jump_prev<CR>")
--- 跳转到下一个诊断
--- keymap.set("n", "<S-C-j>", "<cmd>lua vim.lsp.diagnostic.goto_next()<CR>")
--- 格式化文档
-keymap.set("n", "<leader>F", "<cmd>lua vim.lsp.buf.format()<CR>")
--- 建议操作
--- keymap.set("n", "<leader>a", "<cmd>lua vim.lsp.buf.code_action()<CR>")
--- keymap.set("n", "<leader>a", "<cmd>Lspsaga code_action<CR>")
-keymap.set("n", "<leader>ql", "<cmd>Lspsaga code_action<CR>")
+-- ========== LSP 相关功能 ==========
+-- 使用统一的 LSP 功能，避免与 keybindings.lua 重复
 
--- 切换bufferline
-keymap.set("n", "<C-L>", ":bnext<CR>")
-keymap.set("n", "<C-H>", ":bprevious<CR>")
+-- 快速 LSP 操作（保留为快捷方式）
+keymap.set("n", "gD", vim.lsp.buf.declaration, { desc = "跳转到声明" })
+keymap.set("n", "gd", "<cmd>Lspsaga peek_definition<CR>", { desc = "查看定义" })
+keymap.set("n", "gi", vim.lsp.buf.implementation, { desc = "跳转到实现" })
+keymap.set("n", "gr", vim.lsp.buf.references, { desc = "查找引用" })
 
--- ========== Leader 键映射 ==========
--- 文件操作
-keymap.set("n", "<leader>w", "<Cmd>w<CR>", { desc = "保存文件" })
-keymap.set("n", "<leader>q", "<Cmd>q<CR>", { desc = "退出" })
-keymap.set("n", "<leader>wq", "<Cmd>wq<CR>", { desc = "保存并退出" })
+-- 诊断相关（与 LazyVim 配合）
+keymap.set("n", "<space>D", "<cmd>Lspsaga peek_type_definition<CR>", { desc = "查看类型定义" })
+keymap.set("n", "<space>rn", vim.lsp.buf.rename, { desc = "重命名符号" })
 
--- 路径复制
-keymap.set("n", "<leader>cp", function()
-    local path = vim.fn.expand("%")
-    vim.fn.setreg("+", path)
-    vim.notify("已复制相对路径: " .. path)
-end, { desc = "复制相对路径" })
+-- 格式化和代码操作（使用 <leader>F 统一格式化）
+keymap.set("n", "<leader>F", function() vim.lsp.buf.format({ async = true }) end, { desc = "格式化代码" })
+keymap.set("n", "<leader>ca", "<cmd>Lspsaga code_action<CR>", { desc = "代码操作" })
 
-keymap.set("n", "<leader>pp", function()
-    local path = vim.fn.expand("%:p")
-    vim.fn.setreg("+", path)
-    vim.notify("已复制绝对路径: " .. path)
-end, { desc = "复制绝对路径" })
+-- 缓冲区切换（与 Alt 键位配合使用）
+keymap.set("n", "<C-L>", ":bnext<CR>", { desc = "下一个缓冲区" })
+keymap.set("n", "<C-H>", ":bprevious<CR>", { desc = "上一个缓冲区" })
 
--- 错误复制
-keymap.set("n", "<leader>ce", function()
-    local diagnostics = vim.diagnostic.get(0, { severity = vim.diagnostic.severity.ERROR })
-    if #diagnostics > 0 then
-        local message = diagnostics[1].message
-        vim.fn.setreg("+", message)
-        vim.notify("已复制错误信息到剪贴板")
-    else
-        vim.notify("未找到错误信息", vim.log.levels.WARN)
-    end
-end, { desc = "复制最近错误" })
+-- 编辑配置文件（避免与 keybindings.lua 重复）
+-- 使用 LazyVim 默认的 <space>c 配置相关功能即可
 
--- ========== 插件相关 ==========
--- 文件树
-keymap.set("n", "<leader>e", ":NvimTreeToggle<CR>", { desc = "切换文件树" })
+-- 终端相关（使用 LazyVim 默认的 <leader>ft 或类似功能）
+-- 避免与主题切换冲突，使用不同的键位
 
--- 终端
-keymap.set("n", "<leader>t", function()
-    vim.cmd("split | terminal")
-    vim.cmd("resize 15")
-end, { desc = "打开终端" })
-
--- 退出终端模式
-keymap.set("t", "<Esc>", "<C-\\><C-n>", { desc = "退出终端模式" })
-
--- ========== 数字递增递减 ==========
--- 恢复被覆盖的功能
-keymap.set("n", "<leader>a", "<C-a>", { desc = "数字递增" })
-keymap.set("n", "<leader>x", "<C-x>", { desc = "数字递减" })
+-- ========== 数字递增递减和特殊模式 ==========
+-- 恢复被覆盖的原生功能
+keymap.set("n", "<leader>+", "<C-a>", { desc = "➕ 数字递增" })
+keymap.set("n", "<leader>-", "<C-x>", { desc = "➖ 数字递减" })
 
 -- 块选择模式
-keymap.set("n", "<A-v>", "<C-v>", { desc = "块选择模式" })
+keymap.set("n", "<A-v>", "<C-v>", { desc = "📎 块选择模式" })
 
--- ========== 禁用一些容易误触的键 ==========
--- 禁用 Ex 模式
-keymap.set("n", "Q", "<nop>", { desc = "禁用 Ex 模式" })
+-- ========== 禁用容易误触的按键 ==========
+-- 禁用 Ex 模式（Q 键容易误触）
+keymap.set("n", "Q", "<nop>", { desc = "⛔ 禁用Ex模式" })
 
--- 禁用宏录制（容易误触）
--- keymap.set("n", "q", "<nop>", { desc = "禁用宏录制" })
+-- 可选：禁用宏录制（q 键容易误触）
+-- keymap.set("n", "q", "<nop>", { desc = "🚫 禁用宏录制" })
 
 -- ========== 自动命令 ==========
 -- 插入模式显示绝对行号，普通模式显示相对行号

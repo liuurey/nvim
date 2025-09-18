@@ -12,6 +12,9 @@ vim.g.lazyvim_check_order = false
 
 require("config.keybindings")
 
+-- 修复键位冲突
+require("core.keymap_conflicts_fix").setup()
+
 -- 加载核心配置这部分lazyvim自动处理了
 -- require("config.options")
 -- require("config.keymaps")

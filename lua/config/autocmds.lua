@@ -109,6 +109,32 @@ autocmd("BufReadPost", {
 --------------------------------------------------
 -- 5. 文件类型特定配置
 --------------------------------------------------
+-- 自动加载LSP文件夹中的文件类型配置（替代after/ftplugin）
+autocmd("FileType", {
+    group = my_group,
+    desc = "自动加载LSP文件夹中的文件类型配置",
+    pattern = "*",
+    callback = function(args)
+        local filetype = args.match
+        local lsp_config_path = vim.fn.stdpath('config') .. '/LSP/' .. filetype .. '.lua'
+        
+        -- 检查LSP配置文件是否存在
+        if vim.fn.filereadable(lsp_config_path) == 1 then
+            -- 使用pcall安全加载，避免错误中断
+            local ok, err = pcall(function()
+                dofile(lsp_config_path)
+            end)
+            
+            if not ok then
+                vim.notify(
+                    string.format("加载 %s 文件类型配置失败: %s", filetype, err),
+                    vim.log.levels.WARN
+                )
+            end
+        end
+    end
+})
+
 -- Lua文件配置
 autocmd("FileType", {
     group = my_group,

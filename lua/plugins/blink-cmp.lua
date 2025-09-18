@@ -99,7 +99,7 @@ return {
 		},
 
 		-- 已定义启用的提供程序的默认列表，以便您可以扩展它
-		sources = {
+			sources = {
 			default = {
 				"buffer",
 				"lsp",
@@ -112,7 +112,12 @@ return {
 				buffer = { score_offset = 5 },
 				path = { score_offset = 3 },
 				lsp = { score_offset = 2 },
-				snippets = { score_offset = 1 },
+				snippets = { 
+					score_offset = 6, -- 提高snippets优先级，超过buffer
+					-- 可选：为snippets添加配置选项
+					-- min_keyword_length = 2,
+					-- max_items = 8,
+				},
 				cmdline = {
 					completion = {
 						menu = { auto_show = true },
@@ -135,11 +140,12 @@ return {
 			},
 		},
 	},
-	source={
-		providers = {
-			snippets ={score_offset=100},
-		},
-	},
+	-- 注释掉重复的snippets优先级配置，避免冲突
+	-- source={
+	-- 	providers = {
+	-- 		snippets ={score_offset=100},
+	-- 	},
+	-- },
 	-- 由于“opts_extend”，您的配置中的其他位置无需重新定义它
 	opts_extend = { "sources.default" },
 }
