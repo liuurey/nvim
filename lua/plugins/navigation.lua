@@ -1,3 +1,6 @@
+-- 导航和移动插件集合
+-- 包含：tmux导航、区域选择、Doxygen文档生成等
+-- 从 extra.lua 重命名而来
 return {
   -- tmux导航集成
   {

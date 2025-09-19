@@ -1,0 +1,177 @@
+-- 性能优化：缓存 lazy stats，避免重复计算
+local cache = {
+  stats = nil,
+  stats_time = 0,
+  startup_ready = false, -- 标记启动时间是否已经准备好
+}
+
+local function get_lazy_stats()
+  local current_time = vim.loop.hrtime()
+  -- 缓存 100ms，减少重复计算
+  if not cache.stats or (current_time - cache.stats_time) > 100000000 then
+    cache.stats = require("lazy").stats()
+    cache.stats_time = current_time
+  end
+  return cache.stats
+end
+
+-- 统一的 footer 生成函数
+local function generate_footer()
+  local stats = get_lazy_stats()
+  local ms = stats.startuptime
+  
+  -- 如果启动时间为 0 且还没有准备好，显示等待信息
+  if ms == 0 and not cache.startup_ready then
+    return string.format("⚡ SANINS [SECTIONS] loaded %d/%d plugins (calculating...)", 
+      stats.loaded, stats.count)
+  end
+  
+  -- 正常显示启动时间
+  local formatted_ms = math.floor(ms * 100 + 0.5) / 100
+  return string.format("⚡ SANINS [SECTIONS] loaded %d/%d plugins in %sms", 
+    stats.loaded, stats.count, formatted_ms)
+end
+
+return {
+  "folke/snacks.nvim",
+  priority = 1000,
+  lazy = false,
+  ---@type snacks.Config
+  opts = function()
+    return {
+      -- SANINS 个性化配置
+      bigfile = { enabled = true },
+      dashboard = {
+        enabled = true,
+        sections = {
+          -- Header 分区
+          {
+            section = "header",
+            text = [[
+    ╔═══════════════════════════════════════════════════════════╗
+    ║  ▓██████▓ ▓█████▄ ██▓███▓ ▓█████▄██   ██▓██████▓█████▄  ║
+    ║  ██▓       ██▓ ▓██▓██▓███▓   ▓ ██▓ ▓██▓▓██ ██▓▓   ██▓ ▓██▓ ║
+    ║  ▓█████▓ ▓█████▓▓██▓ ▓██▓ ▓██▓▓█████▓█████▓█████▓▓ ║
+    ║       ▓██▓██▓ ▓██▓██▓   ▓▓██▓ ▓██▓▓██▓██▓     ▓██▓██▓ ▓██▓ ║
+    ║  ▓██████▓▓██▓ ▓██▓██▓███▓▓██▓ ▓██▓▓██▓ ██▓██████▓▓██▓ ▓██▓ ║
+    ║            ⟨⟨⟨ Advanced Sections Layout ⟩⟩⟩             ║
+    ╚═══════════════════════════════════════════════════════════╝
+            ]],
+            align = "center",
+            padding = 1,
+          },
+          
+          -- 插件统计信息（使用优化的缓存函数）
+          {
+            text = function()
+              return generate_footer()
+            end,
+            align = "center",
+            padding = 1,
+          },
+          
+          -- 功能按键分区（左侧）
+          {
+            pane = 1,
+            title = "🚀 Quick Actions",
+            padding = 1,
+          },
+          { pane = 1, icon = "🔍 ", title = "Find File", desc = "Search files", action = ":lua Snacks.dashboard.pick('files')", key = "f" },
+          { pane = 1, icon = "📝 ", title = "New File", desc = "Create new", action = ":ene | startinsert", key = "n" },
+          { pane = 1, icon = "🔎 ", title = "Find Text", desc = "Search text", action = ":lua Snacks.dashboard.pick('live_grep')", key = "g" },
+          { pane = 1, icon = "⚙️ ", title = "Config", desc = "Edit config", action = ":lua Snacks.dashboard.pick('files', {cwd = vim.fn.stdpath('config')})", key = "c" },
+          
+          -- 工具分区（右侧）
+          {
+            pane = 2,
+            title = "🔧 Development Tools",
+            padding = 1,
+          },
+          { pane = 2, icon = "🚀 ", title = "Lazy Manager", desc = "Plugin manager", action = ":Lazy", key = "l" },
+          { pane = 2, icon = "🩺 ", title = "Health Check", desc = "System health", action = ":checkhealth", key = "h" },
+          { pane = 2, icon = "🔧 ", title = "Mason Tools", desc = "LSP manager", action = ":Mason", key = "m" },
+          { pane = 2, icon = "🌳 ", title = "TreeSitter", desc = "Parser info", action = ":TSInstallInfo", key = "t" },
+          
+          -- Recent Files 分区
+          {
+            pane = 2,
+            title = "📁 Recent Files",
+            section = "recent_files",
+            indent = 2,
+            padding = 1,
+            limit = 5,
+          },
+          
+          -- 退出按键
+          {
+            text = "Press q to quit",
+            align = "center",
+            padding = 1,
+            hl = "Comment",
+          },
+        },
+      },
+      explorer = { enabled = true },
+      indent = { enabled = true },
+      input = { enabled = true },
+      picker = { enabled = true },
+      notifier = { enabled = true },
+      quickfile = { enabled = true },
+      scope = { enabled = true },
+      scroll = { enabled = true },
+      statuscolumn = { enabled = true },
+      words = { enabled = true },
+      image = { enabled = true }, -- 启用图像显示功能
+    }
+  end,
+  
+  config = function(_, opts)
+    local ok, snacks = pcall(require, "snacks")
+    if not ok then
+      vim.notify("Failed to load snacks.nvim", vim.log.levels.ERROR)
+      return
+    end
+    
+    snacks.setup(opts)
+    
+    -- 监听 LazyVimStarted 事件来更新启动时间
+    vim.api.nvim_create_autocmd("User", {
+      pattern = "LazyVimStarted",
+      group = vim.api.nvim_create_augroup("SaninsStartupTime", { clear = true }),
+      callback = function()
+        cache.startup_ready = true
+        cache.stats = nil  -- 清空缓存以获取最新的 startuptime
+        
+        -- 如果当前在 dashboard 中，刷新显示
+        if vim.bo.filetype == 'snacks_dashboard' then
+          vim.schedule(function()
+            snacks.dashboard()
+          end)
+        end
+      end,
+    })
+    
+    -- 优化的启动时dashboard显示
+    vim.api.nvim_create_autocmd("VimEnter", {
+      group = vim.api.nvim_create_augroup("SaninsDashboard", { clear = true }),
+      callback = function()
+        -- 更准确的启动检查：无参数且当前buffer为空
+        if vim.fn.argc() == 0 and vim.api.nvim_buf_get_name(0) == "" and vim.api.nvim_buf_line_count(0) <= 1 then
+          local line = vim.api.nvim_buf_get_lines(0, 0, -1, false)[1] or ""
+          if line == "" then
+            snacks.dashboard()
+          end
+        end
+      end,
+    })
+    
+    -- 缓存清理（可选，用于长时间运行的session）
+    vim.api.nvim_create_autocmd("VimLeavePre", {
+      group = vim.api.nvim_create_augroup("SaninsCleanup", { clear = true }),
+      callback = function()
+        cache.stats = nil
+        cache.startup_ready = false
+      end,
+    })
+  end,
+}

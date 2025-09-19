@@ -250,6 +250,10 @@ vim.schedule(function()
     { "<leader>G", group = "🎮 趣味游戏" },
     { "<leader>py", group = "🐍 Python调试" },
     { "<leader>C", group = "⚙️ 配置管理" },
+    { "<leader>Ch", desc = "⚙️ 系统健康检查" },
+    { "<leader>Cm", desc = "⚙️ Mason 包管理器" },
+    { "<leader>Ct", desc = "⚙️ TreeSitter 信息" },
+    { "<leader>Cu", desc = "⚙️ 更新 TreeSitter" },
     { "<leader>N", group = "📢 通知管理" },
     { "<leader>Th", group = "🎨 主题切换" },
     { "<leader>T", group = "💻 终端工具" },
@@ -294,6 +298,21 @@ end, { desc = "🔄 重新加载配置" })
 keymap.set("n", "<leader>Ch", function()
   vim.cmd("checkhealth")
 end, { desc = "⚙️ 检查系统健康" })
+
+-- Mason 包管理器
+keymap.set("n", "<leader>Cm", function()
+  vim.cmd("Mason")
+end, { desc = "⚙️ 打开 Mason 包管理器" })
+
+-- TreeSitter 管理
+keymap.set("n", "<leader>Ct", function()
+  vim.cmd("TSInstallInfo")
+end, { desc = "⚙️ TreeSitter 安装信息" })
+
+-- TreeSitter 更新
+keymap.set("n", "<leader>Cu", function()
+  vim.cmd("TSUpdate")
+end, { desc = "⚙️ 更新 TreeSitter 解析器" })
 
 -- ========== 通知管理增强 ==========
 -- 通知功能移动到 <leader>N，避免 <space>n 冲突
