@@ -88,7 +88,24 @@ return {
             padding = 1,
           },
           { pane = 2, icon = "🚀 ", title = "Lazy Manager", desc = "Plugin manager", action = ":Lazy", key = "l" },
-          { pane = 2, icon = "🩺 ", title = "Health Check", desc = "System health", action = ":checkhealth", key = "h" },
+          { pane = 2, icon = "🩺 ", title = "Health Check", desc = "System health", action = function()
+            -- 安全地执行健康检查，避免 dashboard 关闭时的 autocmd 错误
+            vim.schedule(function()
+              -- 先关闭 dashboard，延迟执行 checkhealth
+              if vim.bo.filetype == 'snacks_dashboard' then
+                local current_win = vim.api.nvim_get_current_win()
+                -- 使用更安全的关闭方式
+                pcall(function()
+                  vim.api.nvim_win_close(current_win, true)
+                end)
+                vim.defer_fn(function()
+                  vim.cmd('checkhealth')
+                end, 50)
+              else
+                vim.cmd('checkhealth')
+              end
+            end)
+          end, key = "h" },
           { pane = 2, icon = "🔧 ", title = "Mason Tools", desc = "LSP manager", action = ":Mason", key = "m" },
           { pane = 2, icon = "🌳 ", title = "TreeSitter", desc = "Parser info", action = ":TSInstallInfo", key = "t" },
           

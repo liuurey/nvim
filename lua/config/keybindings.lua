@@ -304,15 +304,28 @@ keymap.set("n", "<leader>Cm", function()
   vim.cmd("Mason")
 end, { desc = "⚙️ 打开 Mason 包管理器" })
 
--- TreeSitter 管理
-keymap.set("n", "<leader>Ct", function()
-  vim.cmd("TSInstallInfo")
-end, { desc = "⚙️ TreeSitter 安装信息" })
+-- TreeSitter 管理 - 已注释掉，避免重复配置
+-- keymap.set("n", "<leader>Ct", function()
+--   -- TreeSitter 信息命令 - 延迟执行确保安全
+--   vim.schedule(function()
+--     if vim.fn.exists(':TSInstallInfo') > 0 then
+--       vim.cmd('TSInstallInfo')
+--     else
+--       vim.notify('TreeSitter 命令未就绪，请等待插件加载完成', vim.log.levels.INFO)
+--     end
+--   end)
+-- end, { desc = "TreeSitter 安装信息" })
 
--- TreeSitter 更新
-keymap.set("n", "<leader>Cu", function()
-  vim.cmd("TSUpdate")
-end, { desc = "⚙️ 更新 TreeSitter 解析器" })
+-- keymap.set("n", "<leader>Cu", function()
+--   -- TreeSitter 更新命令 - 延迟执行确保安全
+--   vim.schedule(function()
+--     if vim.fn.exists(':TSUpdate') > 0 then
+--       vim.cmd('TSUpdate')
+--     else
+--       vim.notify('TreeSitter 命令未就绪，请等待插件加载完成', vim.log.levels.INFO)
+--     end
+--   end)
+-- end, { desc = "TreeSitter 更新" })
 
 -- ========== 通知管理增强 ==========
 -- 通知功能移动到 <leader>N，避免 <space>n 冲突
