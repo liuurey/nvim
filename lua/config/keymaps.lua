@@ -28,8 +28,10 @@ keymap.set("i", "<C-e>", "<End>", { desc = "行尾" })
 
 -- 删除操作
 keymap.set("i", "<C-d>", "<Del>", { desc = "删除右侧字符" })
-keymap.set("i", "<C-w>", "<C-G>u<C-W>", { desc = "删除单词" })
+keymap.set("i", "<C-w>", "<C-G>u<C-W>", { desc = "删除前一个词" })
+keymap.set("i", "<C-BS>", "<C-G>u<C-W>", { desc = "删除前一个词 (Ctrl+Backspace)" })
 keymap.set("i", "<C-u>", "<C-G>u<C-U>", { desc = "删除到行首" })
+keymap.set("i", "<C-Del>", "<C-G>u<C-K>", { desc = "删除到行尾" })
 
 -- ========== 视觉模式 ==========
 -- 快速退出视觉模式
@@ -49,7 +51,7 @@ keymap.set("v", "<C-v>", '"+p', { desc = "从系统剪贴板粘贴" })
 keymap.set("n", "<C-a>", "ggVG", { desc = "全选" })
 keymap.set("n", "<C-s>", "<Cmd>w<CR>", { desc = "保存文件" })
 keymap.set("n", "<C-z>", "u", { desc = "撤销" })
-keymap.set("n", "<C-y>", "<C-r>", { desc = "重做" })
+keymap.set("n", "<C-i>", "<C-r>", { desc = "重做" })
 
 -- 复制粘贴
 keymap.set("n", "<C-c>", '"+y', { desc = "复制到系统剪贴板" })
@@ -61,10 +63,10 @@ keymap.set("n", "<A-h>", ":bprevious<CR>", { desc = "上一个缓冲区" })
 keymap.set("n", "<A-w>", ":bdelete<CR>", { desc = "关闭当前缓冲区" })
 
 -- 窗口管理（保留与 keybindings.lua 不冲突的键位）
-keymap.set("n", "<leader>sv", "<C-w>v", { desc = "垂直分割窗口" })
-keymap.set("n", "<leader>sh", "<C-w>s", { desc = "水平分割窗口" })
-keymap.set("n", "<leader>sc", "<C-w>c", { desc = "关闭当前窗口" })
-keymap.set("n", "<leader>so", "<C-w>o", { desc = "关闭其他窗口" })
+keymap.set("n", "<leader>sj", "<C-w>v", { desc = "垂直分割窗口" })
+keymap.set("n", "<leader>sk", "<C-w>s", { desc = "水平分割窗口" })
+keymap.set("n", "<leader>sm", "<C-w>c", { desc = "关闭当前窗口" })
+keymap.set("n", "<leader>si", "<C-w>o", { desc = "关闭其他窗口" })
 
 -- 窗口间移动（使用 Ctrl + 方向键，更直观）
 keymap.set("n", "<C-Left>", "<C-w>h", { desc = "移动到左窗口" })
@@ -94,16 +96,22 @@ keymap.set("n", "k", "gk", { desc = "向上移动（包括换行）" })
 -- 快速跳转
 keymap.set("n", "H", "^", { desc = "跳转到行首" })
 keymap.set("n", "L", "$", { desc = "跳转到行尾" })
+keymap.set("n", "<leader>gh", "G$", { desc = "跳转末行末" })
 
--- 终端（避免与 keybindings.lua 中 <leader>T 冲突）
--- 使用不同的键位映射来避免重复
-keymap.set("n", "<leader>tt", function()
-    vim.cmd("split | terminal")
+
+-- 终端配置：使用正确的Neovim终端命令
+-- 根据Neovim官方文档，:terminal命令应该在split之后执行
+keymap.set("n", "<leader>t", function()
+    -- 先分割窗口，然后在新窗口中打开终端
+    vim.cmd("split")
+    vim.cmd("terminal pwsh.exe -NoLogo")
     vim.cmd("resize 15")
-end, { desc = "💻 打开终端横向分割" })
+end, { desc = "💻 横向终端" })
 
 -- 退出终端模式
-keymap.set("t", "<Esc>", "<C-\\><C-n>", { desc = "退出终端模式" })
+-- keymap.set("t", "<C-x>", "<C-\\><C-n>", { desc = "退出终端模式" })
+
+
 
 -- ========== LSP 相关功能 ==========
 -- 使用统一的 LSP 功能，避免与 keybindings.lua 重复
@@ -116,7 +124,7 @@ keymap.set("n", "gr", vim.lsp.buf.references, { desc = "查找引用" })
 
 -- 诊断相关（与 LazyVim 配合）
 keymap.set("n", "<space>D", "<cmd>Lspsaga peek_type_definition<CR>", { desc = "查看类型定义" })
-keymap.set("n", "<space>rn", vim.lsp.buf.rename, { desc = "重命名符号" })
+keymap.set("n", "<space>,n", vim.lsp.buf.rename, { desc = "重命名符号" })
 
 -- 格式化和代码操作（使用 <leader>F 统一格式化）
 keymap.set("n", "<leader>F", function() vim.lsp.buf.format({ async = true }) end, { desc = "格式化代码" })
@@ -134,8 +142,9 @@ keymap.set("n", "<C-H>", ":bprevious<CR>", { desc = "上一个缓冲区" })
 
 -- ========== 数字递增递减和特殊模式 ==========
 -- 恢复被覆盖的原生功能
-keymap.set("n", "<leader>+", "<C-a>", { desc = "➕ 数字递增" })
-keymap.set("n", "<leader>-", "<C-x>", { desc = "➖ 数字递减" })
+keymap.set("n", "<leader>,", "<nop>", { desc = "🙃 凌乱杂项" })
+keymap.set("n", "<leader>,+", "<C-a>", { desc = "➕ 数字递增" })
+keymap.set("n", "<leader>,-", "<C-x>", { desc = "➖ 数字递减" })
 
 -- 块选择模式
 keymap.set("n", "<A-v>", "<C-v>", { desc = "📎 块选择模式" })
@@ -145,7 +154,25 @@ keymap.set("n", "<A-v>", "<C-v>", { desc = "📎 块选择模式" })
 keymap.set("n", "Q", "<nop>", { desc = "⛔ 禁用Ex模式" })
 
 -- 可选：禁用宏录制（q 键容易误触）
--- keymap.set("n", "q", "<nop>", { desc = "🚫 禁用宏录制" })
+keymap.set("n", "q", "<nop>", { desc = "🚫 禁用宏录制" })
+
+-- ========== 自定义功能映射 ==========
+-- leader+space+space 触发文件浏览功能（原leader+space功能）
+-- 支持 Telescope 和原生文件浏览器
+keymap.set("n", "<leader><space><space>", function()
+    -- 检查 Telescope 是否可用
+    local has_telescope, telescope = pcall(require, 'telescope.builtin')
+    if has_telescope then
+        -- 使用 Telescope 查找文件
+        telescope.find_files()
+    else
+        -- 回退到原生文件浏览器
+        vim.cmd("Explore")
+    end
+end, { desc = "📁 文件浏览" })
+
+-- leader+space 禁用（避免误触）
+keymap.set("n", "<leader><space>", "<nop>", { desc = "文件" })
 
 -- ========== 自动命令 ==========
 -- 插入模式显示绝对行号，普通模式显示相对行号

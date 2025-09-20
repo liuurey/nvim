@@ -44,16 +44,21 @@ return {
     },
     
     -- 自动安装缺失的解析器
-    auto_install = true,
+    auto_install = false,
     
     -- 启用语法高亮
     highlight = {
       enable = true,
       -- 对于大文件禁用以提升性能
       disable = function(lang, buf)
+        -- 大文件性能优化
         local max_filesize = 100 * 1024 -- 100 KB
         local ok, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(buf))
         if ok and stats and stats.size > max_filesize then
+          return true
+        end
+        -- LaTeX文件禁用（避免权限问题）
+        if lang == "latex" then
           return true
         end
       end,
@@ -130,131 +135,42 @@ return {
   },
   
   config = function(_, opts)
-    -- 安全加载 treesitter - 延迟加载确保插件就绪
-    vim.schedule(function()
-      local ok, configs = pcall(require, "nvim-treesitter.configs")
-      if not ok then
-        -- 插件未安装时不显示警告，静默返回
-        return
+    -- 加载 treesitter 配置 - 官方推荐简洁方式
+    require("nvim-treesitter").setup(opts)
+    
+    -- 手动注册TSInstallInfo命令（新版TreeSitter缺失此命令）
+    vim.api.nvim_create_user_command('TSInstallInfo', function()
+      local configs = require('nvim-treesitter.config')
+      local parsers = configs.get_installed()
+      
+      print("已安装的TreeSitter解析器:")
+      for _, lang in ipairs(parsers) do
+        print(string.format("  %s", lang))
       end
       
-      -- 设置 treesitter 配置
-      configs.setup(opts)
-    end)
-    
-    -- 创建自动命令来处理 TreeSitter 相关事件
-    local group = vim.api.nvim_create_augroup("TreeSitterConfig", { clear = true })
-    
-    -- 确保 TreeSitter 命令可用 - 延迟检查（静默模式）
-    vim.api.nvim_create_autocmd("VimEnter", {
-      group = group,
-      callback = function()
-        -- 延迟检查以确保插件完全加载
-        vim.defer_fn(function()
-          -- 检查 TreeSitter 是否可用（静默检查，不显示警告）
-          local ts_ok = pcall(require, "nvim-treesitter.configs")
-          if ts_ok and vim.fn.exists(':TSInstallInfo') == 0 then
-            -- 仅当插件存在但命令未就绪时显示信息提示
-            vim.notify("TreeSitter 命令未就绪，请等待插件初始化完成", vim.log.levels.INFO)
-          end
-        end, 2000)  -- 延迟时间2秒
-      end,
+      local available = configs.get_available()
+      local not_installed = {}
+      for _, lang in ipairs(available) do
+        if not vim.tbl_contains(parsers, lang) then
+          table.insert(not_installed, lang)
+        end
+      end
+      
+      if #not_installed > 0 then
+        print("\n可安装的解析器:")
+        for _, lang in ipairs(not_installed) do
+          print(string.format("  %s", lang))
+        end
+      end
+    end, {
+      desc = 'Show treesitter parser install info',
     })
     
-    -- 在文件类型检测后启用 TreeSitter
-    vim.api.nvim_create_autocmd("FileType", {
-      group = group,
-      callback = function()
-        local buf = vim.api.nvim_get_current_buf()
-        local ft = vim.bo[buf].filetype
-        
-        -- 对于支持的文件类型，确保 TreeSitter 已启用
-        if ft and ft ~= "" then
-          vim.defer_fn(function()
-            if vim.api.nvim_buf_is_valid(buf) then
-              pcall(vim.cmd, "TSBufEnable highlight")
-            end
-          end, 100)
-        end
-      end,
+    -- 添加LaTeX问题修复命令
+    vim.api.nvim_create_user_command('TSFixLatex', function()
+      require('plugins.treesitter-fix').fix_latex_parser()
+    end, {
+      desc = 'Fix LaTeX treesitter parser permission issues',
     })
-    
-    -- 提供一个健康检查函数
-    vim.api.nvim_create_user_command("TSHealth", function()
-      local installed = require("nvim-treesitter.info").installed_parsers()
-      local available = require("nvim-treesitter.parsers").available_parsers()
-      
-      print("=== TreeSitter 健康检查 ===")
-      print("已安装的解析器数量: " .. #installed)
-      print("可用的解析器数量: " .. #available)
-      print("\n已安装的解析器:")
-      for _, parser in ipairs(installed) do
-        print("  ✓ " .. parser)
-      end
-      
-      -- 检查常用解析器是否已安装
-      local required = { "lua", "vim", "vimdoc", "query" }
-      print("\n必需解析器检查:")
-      for _, parser in ipairs(required) do
-        local status = vim.tbl_contains(installed, parser) and "✓" or "✗"
-        print("  " .. status .. " " .. parser)
-      end
-    end, { desc = "检查 TreeSitter 状态" })
-    
-    -- 更新 textobjects 配置为最新格式
-    local textobjects = opts.textobjects
-    if textobjects then
-      -- 更新 select.keymaps 为新的 table 格式
-      if textobjects.select and textobjects.select.keymaps then
-        local new_keymaps = {}
-        for key, query in pairs(textobjects.select.keymaps) do
-          if type(query) == "string" then
-            new_keymaps[key] = { query = query, desc = query:gsub("^@", ""):gsub("%.", " ") }
-          else
-            new_keymaps[key] = query
-          end
-        end
-        textobjects.select.keymaps = new_keymaps
-      end
-      
-      -- 添加交换功能配置 - 按键已注释避免冲突
-      textobjects.swap = {
-        enable = true,
-        swap_next = {
-          -- ["<leader>a"] = "@parameter.inner",  -- 已注释避免按键冲突
-        },
-        swap_previous = {
-          -- ["<leader>A"] = "@parameter.inner",  -- 已注释避免按键冲突
-        },
-      }
-      
-      -- 更新 move 配置为新的 table 格式
-      if textobjects.move then
-        for _, section in ipairs({"goto_next_start", "goto_next_end", "goto_previous_start", "goto_previous_end"}) do
-          if textobjects.move[section] then
-            local new_section = {}
-            for key, query in pairs(textobjects.move[section]) do
-              if type(query) == "string" then
-                new_section[key] = { query = query, desc = query:gsub("^@", ""):gsub("%.", " ") }
-              else
-                new_section[key] = query
-              end
-            end
-            textobjects.move[section] = new_section
-          end
-        end
-      end
-      
-      -- 添加LSP交互功能 - 按键已注释避免冲突
-      textobjects.lsp_interop = {
-        enable = true,
-        border = 'rounded',  -- 使用圆角边框
-        floating_opts = {},
-        peek_definition_code = {
-          -- ["<leader>df"] = "@function.outer",  -- 已注释避免按键冲突
-          -- ["<leader>dF"] = "@class.outer",   -- 已注释避免按键冲突
-        },
-      }
-    end
   end,
 }

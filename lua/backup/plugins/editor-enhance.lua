@@ -11,7 +11,10 @@ return {{
                 -- 示例：添加自定义环绕（可选）
                 ["y"] = {
                     add = function()
-                        local input = vim.fn.input("Enter a URL: ")
+                        local ok, input = pcall(vim.fn.input, "Enter a URL: ")
+                        if not ok or input == "" then
+                          return {{"[", "]()"}} -- 降级：空链接
+                        end
                         return {{"[", "](" .. input .. ")"}}
                     end
                 }
@@ -277,58 +280,113 @@ return {{
         exchange = {
             motion = false,
             use_esc_to_cancel = true
-        },
-        ai = {
-            enabled = true,
-            provider = 'deepseek',
-            api_key = os.getenv('DEEPSEEK_API_KEY'),
-            temperature = 0.5
         }
+        -- 注意：substitute.nvim 不支持 ai 配置，已移除相关配置
+        -- 如需 AI 替换功能，请考虑使用其他插件如：
+        -- - https://github.com/Bryley/neoai.nvim
+        -- - https://github.com/jackMort/ChatGPT.nvim
     }
 },  {
     'nvim-neotest/neotest',
-    dependencies = {'nvim-lua/plenary.nvim', 'nvim-treesitter/nvim-treesitter', 'antoinemadec/FixCursorHold.nvim' -- 'nvim-neotest/neotest-rspec',
-    -- 'nvim-neotest/neotest-go',
+    dependencies = {
+        'nvim-lua/plenary.nvim', 
+        'nvim-treesitter/nvim-treesitter', 
+        'antoinemadec/FixCursorHold.nvim',
+        'nvim-neotest/neotest-python',      -- Python 测试适配器
+        'nvim-neotest/neotest-jest',        -- JavaScript/TypeScript 测试适配器
+        'nvim-neotest/neotest-go',          -- Go 测试适配器
+        'nvim-neotest/neotest-rspec',       -- Ruby RSpec 测试适配器
+        'nvim-neotest/nvim-nio'             -- 异步 IO 支持
     },
     keys = {{
-        '<leader>tn',
-        '<CMD>lua require("neotest").run.run()<CR>',
-        desc = 'Run nearest test'
-    }, {
-        '<leader>tf',
-        '<CMD>lua require("neotest").run.run(vim.fn.expand("%"))<CR>',
-        desc = 'Run file tests'
-    }, {
-        '<leader>ts',
-        '<CMD>lua require("neotest").run.stop()<CR>',
-        desc = 'Stop test run'
-    }, {
-        '<leader>to',
-        '<CMD>lua require("neotest").output.open()<CR>',
-        desc = 'Open test output'
-    }, {
-        '<leader>tp',
-        '<CMD>lua require("neotest").summary.toggle()<CR>',
-        desc = 'Toggle test summary'
-    }},
-    opts = {
-        adapters = {
-            --    require('neotest-rspec')({
-            --      rspec_cmd = function()
-            --        return vim.tbl_flatten({
-            --          'bundle',
-            --          'exec',
-            --          'rspec',
-            --        })
-            --      end,
-            --    }),
-            --    require('neotest-go')({
-            --      experimental = {
-            --        test_table = true,
-            --      },
-            --      args = { '-count=1', '-timeout=60s' },
-            --    }),
-            --  },
+            '<leader>tn',
+            function() require('neotest').run.run() end,
+            desc = '运行最近的测试'
+        }, {
+            '<leader>tf',
+            function() require('neotest').run.run(vim.fn.expand("%")) end,
+            desc = '运行当前文件测试'
+        }, {
+            '<leader>ts',
+            function() require('neotest').run.stop() end,
+            desc = '停止测试运行'
+        }, {
+            '<leader>to',
+            function() require('neotest').output.open() end,
+            desc = '打开测试输出'
+        }, {
+            '<leader>tp',
+            function() require('neotest').summary.toggle() end,
+            desc = '切换测试摘要'
+        }, {
+            '<leader>td',
+            function() require('neotest').run.run({strategy = 'dap'}) end,
+            desc = '调试测试'
+        }, {
+            '<leader>tw',
+            function() require('neotest').watch.toggle(vim.fn.expand("%")) end,
+            desc = '监视测试文件'
+        }},
+    config = function()
+        local neotest = require('neotest')
+        
+        -- 适配器配置表
+        local adapters = {}
+        
+        -- Python 适配器配置
+        local python_adapter_ok, python_adapter = pcall(require, 'neotest-python')
+        if python_adapter_ok then
+            table.insert(adapters, python_adapter({
+                dap = { justMyCode = false },
+                runner = "pytest",
+                python = ".venv/bin/python", -- 默认虚拟环境路径
+                is_test_file = function(file_path)
+                    return file_path:match("test_.*%.py$") or file_path:match(".*_test%.py$")
+                end
+            }))
+        end
+        
+        -- JavaScript/TypeScript 适配器配置
+        local jest_adapter_ok, jest_adapter = pcall(require, 'neotest-jest')
+        if jest_adapter_ok then
+            table.insert(adapters, jest_adapter({
+                jestCommand = "npm test --",
+                jestConfigFile = "custom.jest.config.ts",
+                env = { CI = true },
+                cwd = function(path)
+                    return vim.fn.getcwd()
+                end
+            }))
+        end
+        
+        -- Go 适配器配置
+        local go_adapter_ok, go_adapter = pcall(require, 'neotest-go')
+        if go_adapter_ok then
+            table.insert(adapters, go_adapter({
+                experimental = {
+                    test_table = true,
+                },
+                args = { '-count=1', '-timeout=60s' }
+            }))
+        end
+        
+        -- RSpec 适配器配置
+        local rspec_adapter_ok, rspec_adapter = pcall(require, 'neotest-rspec')
+        if rspec_adapter_ok then
+            table.insert(adapters, rspec_adapter({
+                rspec_cmd = function()
+                    return vim.tbl_flatten({
+                        'bundle',
+                        'exec',
+                        'rspec',
+                    })
+                end
+            }))
+        end
+        
+        -- 设置 neotest
+        neotest.setup({
+            adapters = adapters,
             status = {
                 enabled = true,
                 signs = true,
@@ -352,9 +410,34 @@ return {{
                     short = 's',
                     stop = 'x'
                 }
+            },
+            diagnostic = {
+                enabled = true,
+                severity = 1
+            },
+            run = {
+                enabled = true,
+                concurrent = true,
+                parallel = 4
+            },
+            discovery = {
+                enabled = true,
+                concurrent = true,
+                parallel = 4
             }
-        }
-    },
+        })
+        
+        -- 自动命令：保存时自动运行测试
+        vim.api.nvim_create_autocmd("BufWritePost", {
+            pattern = {"*test*", "test_*"},
+            callback = function()
+                if vim.bo.filetype == "python" or vim.bo.filetype == "javascript" or vim.bo.filetype == "typescript" then
+                    neotest.run.run()
+                end
+            end,
+            group = vim.api.nvim_create_augroup("NeotestAutoRun", { clear = true })
+        })
+    end,
 
     {
         'MagicDuck/grug-far.nvim',
@@ -365,12 +448,8 @@ return {{
             desc = 'Grug Far (Global Replace)'
         }},
         opts = {
-            ai = {
-                enabled = true,
-                provider = 'deepseek',
-                api_key = os.getenv('DEEPSEEK_API_KEY'),
-                temperature = 0.3
-            },
+            -- 注意：grug-far.nvim 不支持 ai 配置，已移除相关配置
+            -- 如需 AI 搜索功能，请考虑使用其他插件
             ui = {
                 border = 'rounded',
                 preview = {
@@ -481,12 +560,8 @@ return {{
                 }
             },
             merge_tool = {
-                -- 冲突解决AI建议
-                ai_assistant = {
-                    enabled = true,
-                    provider = 'claude',
-                    api_key = os.getenv('ANTHROPIC_API_KEY')
-                }
+                -- 注意：diffview.nvim 不支持 AI 冲突解决，已移除相关配置
+                -- 如需 AI 冲突解决功能，请考虑手动集成 AI 工具
             }
         }
     },
@@ -509,16 +584,8 @@ return {{
                 telescope = true,
                 diffview = true
             },
-            AI = {
-                enabled = true,
-                provider = 'openai',
-                api_key = os.getenv('OPENAI_API_KEY'),
-                commit_message = {
-                    enabled = true,
-                    language = 'zh-CN', -- 支持 'en-US', 'zh-CN'
-                    style = 'conventional' -- conventional, descriptive
-                }
-            },
+            -- 注意：neogit 的 AI 配置可能需要额外插件支持
+            -- 如需 AI 提交信息功能，请确保安装了相应插件
             signs = {
                 section = {'>', 'v'},
                 item = {'>', 'v'},
@@ -563,7 +630,7 @@ return {{
                     ['m'] = 'Merge',
                     ['P'] = 'Pull',
                     ['pu'] = 'Push',
-                    ['a'] = 'AICommitMessage' -- 生成AI提交信息
+                    ['a'] = 'AICommitMessage' -- 注意：此功能需要额外的AI插件支持
                 }
             }
         }

@@ -1,0 +1,16 @@
+---
+# 雪律 TIFA ∞ 冻结版 .clang-format
+# 作用域：整个 Neovim 配置仓库内的 C/C++ 文件
+# 引用方式：无需额外引用，clangd 会自动向上查找本文件
+Language: Cpp
+BasedOnStyle: LLVM
+IndentWidth: 2
+BreakBeforeBraces: Attach
+ColumnLimit: 80
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+PointerAlignment: Left
+SortIncludes: true
+UseTab: Never
+...

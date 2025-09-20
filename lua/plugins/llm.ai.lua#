@@ -1,0 +1,74 @@
+---
+-- 雪律 TIFA ∞ 冻结版 llm.nvim 配置
+-- 依赖环境变量：ZHIPU_API_KEY （Windows11 下设置为系统变量）
+-- 统一在 i 模式加中文 desc，方便秒懂
+-- 模型：glm-4-flash（智谱清言免费高速版）
+---
+return {
+  "Kurama622/llm.nvim",
+  dependencies = {
+    { "nvim-lua/plenary.nvim",  lazy = true },
+    { "MunifTanjim/nui.nvim",   lazy = true },
+  },
+  cmd = { "LLMSessionToggle", "LLMSelectedTextHandler", "LLMAppHandler" },
+  keys = {
+    -- 统一收拢到 <leader>i 前缀，方便记忆与避免冲突
+    { "<leader>ic", mode = { "n" }, "<cmd>LLMSessionToggle<cr>", desc = "开关 LLM 聊天窗" },
+    { "<leader>it", mode = { "x" }, "<cmd>LLMAppHandler WordTranslate<cr>", desc = "划词翻译" },
+    { "<leader>ie", mode = { "x" }, "<cmd>LLMAppHandler CodeExplain<cr>", desc = "解释代码" },
+    { "<leader>ia", mode = { "n" }, "<cmd>LLMAppHandler Translate<cr>", desc = "AI 翻译整段" },
+    { "<leader>iT", mode = { "x" }, "<cmd>LLMAppHandler TestCode<cr>", desc = "生成测试用例" },
+    { "<leader>io", mode = { "x" }, "<cmd>LLMAppHandler OptimCompare<cr>", desc = "优化代码并对比" },
+    { "<leader>iu", mode = { "n" }, "<cmd>LLMAppHandler UserInfo<cr>", desc = "查询账户余额" },
+    { "<leader>ig", mode = { "n" }, "<cmd>LLMAppHandler CommitMsg<cr>", desc = "生成提交信息" },
+    { "<leader>id", mode = { "x" }, "<cmd>LLMAppHandler DocString<cr>", desc = "生成文档字符串" },
+    { "<leader>ik", mode = { "x", "n" }, "<cmd>LLMAppHandler Ask<cr>", desc = "一次性提问" },
+    { "<leader>im", mode = { "x", "n" }, "<cmd>LLMAppHandler AttachToChat<cr>", desc = "多轮追问" },
+  },
+  config = function()
+    require("llm").setup({
+      -- 智谱清言官方接口
+      url     = "https://open.bigmodel.cn/api/paas/v4/chat/completions",
+      model   = "glm-4-flash",
+      api_type= "zhipu",
+      -- 从环境变量读取密钥，Windows11 推荐在「系统变量」里新增 ZHIPU_API_KEY
+      fetch_key = function() return vim.fn.getenv("ZHIPU_API_KEY") end,
+      timeout = 30,                    -- 30 秒超时
+      max_tokens = 4096,               -- 最大返回长度
+      temperature = 0.7,                 -- 创造力 0~1
+      top_p = 0.9,                     -- 多样性 0~1
+      -- UI 层配置
+      ui = {
+        float = {
+          border   = "rounded",
+          width    = 0.8,
+          height   = 0.8,
+          row      = 0.5,
+          col      = 0.5,
+          title    = " 🤖 智谱 glm-4-flash ",
+          title_pos= "center",
+        },
+        split = {
+          direction = "vertical",      -- vertical|horizontal
+          size      = 0.4,
+        },
+      },
+      -- 工具链默认开启项
+      tools = {
+        WordTranslate = { enable = true },
+        CodeExplain   = { enable = true },
+        Translate     = { enable = true },
+        TestCode      = { enable = true },
+        OptimCompare  = { enable = true, diff_mode = true },
+        UserInfo      = { enable = true },
+        CommitMsg     = { enable = true },
+        DocString     = { enable = true },
+        Ask           = { enable = true, inline_assistant = true },
+        AttachToChat  = { enable = true, inline_assistant = true },
+      },
+      -- 流式输出解析（官方默认即可）
+      streaming_handler = nil,
+      parse_handler     = nil,
+    })
+  end,
+}

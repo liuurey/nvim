@@ -271,11 +271,15 @@ return {
               "--header-insertion=iwyu",
               "--completion-style=detailed",
               "--function-arg-placeholders",
+              "--fallback-style=llvm",          -- 格式化兜底风格
             },
             capabilities = {
               textDocument = {
                 completion = {
                   editsNearCursor = true,
+                },
+                formatting = {
+                  dynamicRegistration = true,     -- 显式开启格式化能力
                 },
               },
               offsetEncoding = { "utf-8", "utf-16" },
@@ -346,7 +350,10 @@ return {
             cmd = { get_windows_tool_path("vscode-json-language-server", "vscode-json-language-server"), "--stdio" },
             on_new_config = function(new_config)
               new_config.settings.json.schemas = new_config.settings.json.schemas or {}
-              vim.list_extend(new_config.settings.json.schemas, require("schemastore").json.schemas())
+              local ss = require("lib.safe_require").safe_require("schemastore")
+              if ss then
+                vim.list_extend(new_config.settings.json.schemas, ss.json.schemas())
+              end
             end,
             settings = {
               json = {
@@ -363,7 +370,10 @@ return {
               new_config.settings.yaml.schemas = vim.tbl_deep_extend(
                 "force",
                 new_config.settings.yaml.schemas or {},
-                require("schemastore").yaml.schemas()
+                (function()
+                  local ss = require("lib.safe_require").safe_require("schemastore")
+                  return ss and ss.yaml.schemas() or {}
+                end)()
               )
             end,
             settings = {

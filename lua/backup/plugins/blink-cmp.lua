@@ -71,24 +71,24 @@ return {
 			-- 	border = "single", -- Defaults to `vim.o.winborder` on nvim 0.11+
 			-- },
 			menu = {
-				draw = {
-					-- We don't need label_description now because label and label_description are already
-					-- combined together in label by colorful-menu.nvim.
-					columns = { { "kind_icon" }, { "label", gap = 1 } },
-					components = {
-						label = {
-							text = function(ctx)
-								local m = require("lib.safe_require").safe_require("colorful-menu")
-								return m and m.blink_components_text(ctx) or ctx.label
-							end,
-							highlight = function(ctx)
-								local m = require("lib.safe_require").safe_require("colorful-menu")
-								return m and m.blink_components_highlight(ctx) or "BlinkCmpLabel"
-							end,
-						},
-					},
-				},
-			},
+                draw = {
+                    -- We don't need label_description now because label and label_description are already
+                    -- combined together in label by colorful-menu.nvim.
+                    columns = { { "kind_icon" }, { "label", gap = 1 } },
+                    components = {
+                        label = {
+                            text = function(ctx)
+                                local m = require("lib.safe_require").safe_require("colorful-menu")
+                                return m and m.blink_components_text(ctx) or ctx.label
+                            end,
+                            highlight = function(ctx)
+                                local m = require("lib.safe_require").safe_require("colorful-menu")
+                                return m and m.blink_components_highlight(ctx) or "BlinkCmpLabel"
+                            end,
+                        },
+                    },
+                },
+            },
 		},
 		-- 指定文件类型启用/禁用
 		enabled = function()
@@ -111,13 +111,12 @@ return {
 		-- 已定义启用的提供程序的默认列表，以便您可以扩展它
 		sources = {
 			default = {
-				
+				"buffer",
 				"lsp",
 				"path",
-				"buffer",
-				-- "snippets",
-				-- "avante",
-				-- "glm4", -- 添加 GLM-4 AI 补全源
+				"snippets",
+				"avante",
+				"glm4", -- 添加 GLM-4 AI 补全源
 			},
 			providers = {
 				-- score_offset设置优先级数字越大优先级越高
@@ -130,7 +129,8 @@ return {
 					-- max_items = 8,
 				},
 				lsp = { score_offset = 10 }, -- 置顶，最高优先级
-			},
+				
 		},
+	},
 	opts_extend = { "sources.default" },
 }}

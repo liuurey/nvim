@@ -166,7 +166,11 @@ return {
       local function get_program_path(default_path)
         local default_dir = default_path or vim.fn.getcwd()
         return function()
-          return vim.fn.input('Path to executable: ', normalize_windows_path(default_dir) .. '\\', 'file')
+          local ok, path = pcall(vim.fn.input, 'Path to executable: ', normalize_windows_path(default_dir) .. '\\', 'file')
+          if not ok or path == "" then
+            return "" -- 降级：空路径
+          end
+          return path
         end
       end
 
@@ -303,7 +307,10 @@ dap.configurations.python = {
     name = 'Launch with arguments',
     program = '${file}',
     args = function()
-      local args_string = vim.fn.input('Arguments: ')
+      local ok, args_string = pcall(vim.fn.input, 'Arguments: ')
+      if not ok or args_string == "" then
+        return {} -- 降级：空参数
+      end
       if vim.fn.has('nvim-0.10') == 1 then
         local utils = require('dap.utils')
         if utils.splitstr then
@@ -320,7 +327,11 @@ dap.configurations.python = {
     request = 'launch',
     name = 'Launch module',
     module = function()
-      return vim.fn.input('Module name: ')
+      local ok, name = pcall(vim.fn.input, 'Module name: ')
+      if not ok or name == "" then
+        return "__empty__" -- 降级：非法模块名，调试器会报错但不再崩溃
+      end
+      return name
     end,
     console = 'integratedTerminal',
     cwd = '${workspaceFolder}',
@@ -394,7 +405,12 @@ dap.configurations.dosbatch = {
       -- 断点管理
       keymap('n', '<leader>db', function() dap.toggle_breakpoint() end, { desc = '切换断点' })
       keymap('n', '<leader>dB', function() 
-        dap.set_breakpoint(vim.fn.input('Breakpoint condition: '))
+        local ok, cond = pcall(vim.fn.input, 'Breakpoint condition: ')
+        if ok and cond ~= "" then
+          dap.set_breakpoint(cond)
+        else
+          vim.notify("条件断点取消", vim.log.levels.WARN)
+        end
       end, { desc = '条件断点' })
       keymap('n', '<leader>dr', function() dap.repl.open() end, { desc = '打开REPL' })
       keymap('n', '<leader>dl', function() dap.run_last() end, { desc = '重新运行' })
@@ -404,22 +420,26 @@ dap.configurations.dosbatch = {
         require('dapui').toggle() 
       end, { desc = '切换调试UI' })
       
-      keymap('n', '<leader>de', function() 
+      keymap('n', '<leader>dv', function() 
         require('dapui').eval() 
       end, { desc = '计算表达式' })
       
       -- 中止调试
       keymap('n', '<leader>dt', function() dap.terminate() end, { desc = '中止调试' })
-      keymap('n', '<leader>dc', function() dap.close() end, { desc = '关闭调试' })
+      keymap('n', '<leader>dq', function() dap.close() end, { desc = '关闭调试' })
       
       -- Python 特定调试（重新定义到 <leader>py 前缀避免冲突）
-      keymap('n', '<leader>pym', function() 
+      keymap('n', '<leader>pys', function() 
         require('dap-python').test_method() 
-      end, { desc = 'Python: 调试测试方法' })
+      end, { desc = 'Python测试方法' })
       
-      keymap('n', '<leader>pyc', function() 
+      keymap('n', '<leader>pyh', function() 
+        require('dap-python').debug_selection() 
+      end, { desc = 'Python调试选择' })
+      
+      keymap('n', '<leader>pyp', function() 
         require('dap-python').test_class() 
-      end, { desc = 'Python: 调试测试类' })
+      end, { desc = 'Python测试类' })
       
       -- 设置断点样式
       vim.fn.sign_define('DapBreakpoint', {text='ὓ4', texthl='DapBreakpoint', linehl='', numhl=''})

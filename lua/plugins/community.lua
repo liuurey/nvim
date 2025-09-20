@@ -58,7 +58,5 @@ return { -- 1. 快速跳转：flash.nvim
         vim.g.VM_theme = "iceblue"
         vim.g.VM_highlight_matches = "underline"
     end
-}, {
-    'greggh/claude-code.nvim',
-    config = true
-}}
+}, 
+}

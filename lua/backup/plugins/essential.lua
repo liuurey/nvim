@@ -11,14 +11,17 @@ return {{
                 -- 示例：添加自定义环绕（可选）
                 ["y"] = {
                     add = function()
-                        local input = vim.fn.input("Enter a URL: ")
+                        local ok, input = pcall(vim.fn.input, "Enter a URL: ")
+                        if not ok or input == "" then
+                          return {{"[", "]()"}} -- 降级：空链接
+                        end
                         return {{"[", "](" .. input .. ")"}}
                     end
                 }
             }
         })
     end
-},-- Markdown富文本渲染
+}, -- Markdown富文本渲染
 {
     'MeanderingProgrammer/render-markdown.nvim',
     ft = { 'markdown', 'md' },
@@ -107,9 +110,10 @@ return {{
         end,
         on_close = function()
             -- 关闭时的回调
-        end
+        end}
     }
-}, {
+}, 
+{
     'folke/twilight.nvim',
     opts = {
         dimming = {
@@ -121,10 +125,12 @@ return {{
         context = 10, -- 上下文行数
         treesitter = true,
         expand = { -- 扩展高亮的节点
-        'function', 'method', 'table', 'if_statement'},
+            'function', 'method', 'table', 'if_statement'
+        },
         exclude = {} -- 排除的文件类型
     }
-}, -- 编辑效率类插件
+},
+-- 编辑效率类插件
 {
     'mrjones2014/smart-splits.nvim',
     event = { "VeryLazy" },
@@ -282,66 +288,239 @@ return {{
             enabled = true,
             provider = 'deepseek',
             api_key = os.getenv('DEEPSEEK_API_KEY'),
-            temperature = 0.5
+            temperature = 0.5,
+            -- GLM-4 支持
+            glm4 = {
+                    enabled = true,
+                    provider = 'glm4',
+                    api_key = os.getenv('GLM4_API_KEY') or '',
+                    api_url = 'https://open.bigmodel.cn/api/paas/v4',
+                    model = 'glm-4-flash',
+                    temperature = 0.3,
+                    max_tokens = 2048,
+                }
         }
     }
 },  {
-    'nvim-neotest/neotest',
-    dependencies = {'nvim-lua/plenary.nvim', 'nvim-treesitter/nvim-treesitter', 'antoinemadec/FixCursorHold.nvim' -- 'nvim-neotest/neotest-rspec',
-    -- 'nvim-neotest/neotest-go',
-    },
-    keys = {{
-        '<leader>tn',
-        '<CMD>lua require("neotest").run.run()<CR>',
-        desc = 'Run nearest test'
-    }, {
-        '<leader>tf',
-        '<CMD>lua require("neotest").run.run(vim.fn.expand("%"))<CR>',
-        desc = 'Run file tests'
-    }, {
-        '<leader>ts',
-        '<CMD>lua require("neotest").run.stop()<CR>',
-        desc = 'Stop test run'
-    }, {
-        '<leader>to',
-        '<CMD>lua require("neotest").output.open()<CR>',
-        desc = 'Open test output'
-    }, {
-        '<leader>tp',
-        '<CMD>lua require("neotest").summary.toggle()<CR>',
-        desc = 'Toggle test summary'
-    }},
-    opts = {
-        adapters = {
-            --    require('neotest-rspec')({
-            --      rspec_cmd = function()
-            --        return vim.tbl_flatten({
-            --          'bundle',
-            --          'exec',
-            --          'rspec',
-            --        })
-            --      end,
-            --    }),
-            --    require('neotest-go')({
-            --      experimental = {
-            --        test_table = true,
-            --      },
-            --      args = { '-count=1', '-timeout=60s' },
-            --    }),
-            --  },
+        'nvim-neotest/neotest',
+        dependencies = {
+            'nvim-lua/plenary.nvim', 
+            'nvim-treesitter/nvim-treesitter', 
+            'antoinemadec/FixCursorHold.nvim',
+            'nvim-neotest/nvim-nio',  -- 官方推荐的异步IO库
+            -- 多语言测试适配器
+            'olimorris/neotest-rspec',           -- Ruby RSpec
+            'nvim-neotest/neotest-go',            -- Go
+            'nvim-neotest/neotest-python',        -- Python (pytest/unittest)
+            'nvim-neotest/neotest-jest',          -- JavaScript/TypeScript Jest
+            'nvim-neotest/neotest-vitest',        -- Vite测试
+            'nvim-neotest/neotest-plenary',       -- Neovim Lua测试
+        },
+        keys = {
+            -- 基础测试运行
+            {
+                '<leader>tn',
+                function() require('neotest').run.run() end,
+                desc = '运行最近的测试'
+            },
+            {
+                '<leader>tf',
+                function() require('neotest').run.run(vim.fn.expand('%')) end,
+                desc = '运行当前文件的所有测试'
+            },
+            {
+                '<leader>td',
+                function() require('neotest').run.run({strategy = 'dap'}) end,
+                desc = '调试最近的测试 (需要nvim-dap)'
+            },
+            -- 测试管理
+            {
+                '<leader>ts',
+                function() require('neotest').run.stop() end,
+                desc = '停止测试运行'
+            },
+            {
+                '<leader>ta',
+                function() require('neotest').run.attach() end,
+                desc = '附加到测试进程'
+            },
+            -- 输出和摘要
+            {
+                '<leader>to',
+                function() require('neotest').output.open({enter = true, auto_close = true}) end,
+                desc = '打开测试输出'
+            },
+            {
+                '<leader>tp',
+                function() require('neotest').summary.toggle() end,
+                desc = '切换测试摘要面板'
+            },
+            {
+                '<leader>tO',
+                function() require('neotest').output_panel.toggle() end,
+                desc = '切换测试输出面板'
+            },
+            -- 高级功能
+            {
+                '<leader>tw',
+                function() require('neotest').watch.toggle(vim.fn.expand('%')) end,
+                desc = '切换测试监视模式'
+            },
+            {
+                '<leader>tR',
+                function() require('neotest').run.run_last() end,
+                desc = '重新运行最后的测试'
+            }
+        },
+        opts = {
+            -- 适配器配置 - 按官方最佳实践设置
+            adapters = {
+                -- Python配置 (pytest/unittest)
+                require('neotest-python')({
+                    -- DAP调试配置
+                    dap = { 
+                        justMyCode = false,  -- 允许调试第三方库
+                        console = 'integratedTerminal',
+                    },
+                    -- 命令行参数
+                    args = {'--verbose', '--tb=short'},
+                    -- 测试运行器
+                    runner = 'pytest',
+                    -- 自动发现参数化测试实例
+                    pytest_discover_instances = true,
+                    -- Python路径 (自动检测虚拟环境)
+                    python = function()
+                        local venv_paths = {
+                            '.venv/bin/python',
+                            'venv/bin/python', 
+                            'env/bin/python',
+                            '.env/bin/python'
+                        }
+                        for _, path in ipairs(venv_paths) do
+                            if vim.fn.filereadable(path) == 1 then
+                                return path
+                            end
+                        end
+                        return 'python'
+                    end,
+                }),
+                
+                -- Jest配置 (JavaScript/TypeScript)
+                require('neotest-jest')({
+                    -- Jest命令
+                    jestCommand = 'npm test --',
+                    -- 配置文件路径
+                    jestConfigFile = function(file)
+                        -- 支持monorepo结构
+                        if file:match('packages/') then
+                            return string.match(file, '(.-/)src') .. 'jest.config.js'
+                        end
+                        return vim.fn.getcwd() .. '/jest.config.js'
+                    end,
+                    -- 环境变量
+                    env = { CI = true, NODE_ENV = 'test' },
+                    -- 工作目录
+                    cwd = function(file)
+                        -- monorepo支持
+                        if file:match('packages/') then
+                            return string.match(file, '(.-/)src')
+                        end
+                        return vim.fn.getcwd()
+                    end,
+                    -- 参数化测试发现
+                    jest_test_discovery = true,
+                }),
+                
+                -- Vitest配置
+                require('neotest-vitest')({
+                    -- Vitest命令
+                    vitestCommand = 'npm run test:vitest --',
+                }),
+                
+                -- Go配置
+                require('neotest-go')({
+                    experimental = {
+                        test_table = true,  -- 启用表格驱动测试支持
+                    },
+                    -- Go test参数
+                    args = { 
+                        '-count=1',      -- 禁用测试缓存
+                        '-timeout=60s',  -- 超时时间
+                        '-v',            -- 详细输出
+                    },
+                }),
+                
+                -- RSpec配置 (Ruby)
+                require('neotest-rspec')({
+                    rspec_cmd = function()
+                        return vim.tbl_flatten({
+                            'bundle',
+                            'exec', 
+                            'rspec',
+                            '--format', 'json',
+                            '--format', 'documentation',
+                        })
+                    end,
+                }),
+                
+                -- Plenary配置 (Neovim Lua测试)
+                require('neotest-plenary'),
+            },
+            
+            -- 测试发现配置
+            discovery = {
+                enabled = true,
+                concurrent = 0,  -- 0表示自动检测CPU核心数
+            },
+            
+            -- 测试运行配置
+            running = {
+                concurrent = true,
+            },
+            
+            -- 状态显示配置
             status = {
                 enabled = true,
                 signs = true,
-                virtual_text = true
+                virtual_text = {
+                    enabled = true,
+                    -- 自定义虚拟文本格式
+                    format = function(test_status)
+                        local status_map = {
+                            passed = '✓',
+                            failed = '✗', 
+                            skipped = '⊘',
+                            running = '⟳',
+                        }
+                        return status_map[test_status] or '?'
+                    end,
+                }
             },
+            
+            -- 输出配置
             output = {
                 enabled = true,
-                open_on_run = true
+                open_on_run = true,
+                -- 输出窗口配置
+                float = {
+                    border = 'rounded',
+                    max_width = 120,
+                    max_height = 30,
+                }
             },
+            
+            -- 输出面板配置
+            output_panel = {
+                enabled = true,
+                open = 'botright vsplit | vertical resize 60',
+            },
+            
+            -- 摘要窗口配置
             summary = {
                 enabled = true,
                 expand_errors = true,
                 follow = true,
+                -- 自定义映射
                 mappings = {
                     attach = 'a',
                     expand = 'e',
@@ -350,12 +529,58 @@ return {{
                     output = 'o',
                     run = 'r',
                     short = 's',
-                    stop = 'x'
+                    stop = 'x',
+                    -- 额外映射
+                    clear_marked = 'M',
+                    clear_selected = 'C',
+                    debug = 'd',
+                    debug_marked = 'D',
+                    mark = 'm',
+                    next_failed = 'J',
+                    prev_failed = 'K',
+                    watch = 'w',
                 }
+            },
+            
+            -- 诊断消息配置
+            diagnostic = {
+                enabled = true,
+                severity = vim.diagnostic.severity.ERROR,
+            },
+            
+            -- 通知配置
+            notify = {
+                enabled = true,
+                -- 使用Neovim内置通知系统
+                timeout = 3000,  -- 3秒超时
             }
-        }
-    },
-
+        },
+        config = function(_, opts)
+            -- 获取neotest命名空间
+            local neotest_ns = vim.api.nvim_create_namespace('neotest')
+            
+            -- 配置诊断设置
+            vim.diagnostic.config({
+                virtual_text = {
+                    format = function(diagnostic)
+                        local message = diagnostic.message:gsub('\n', ' '):gsub('\t', ' '):gsub('%s+', ' '):gsub('^%s+', '')
+                        return message
+                    end,
+                }
+            }, neotest_ns)
+            
+            -- 应用配置
+            require('neotest').setup(opts)
+            
+            -- 确保treesitter解析器已安装
+            local test_langs = { 'python', 'javascript', 'typescript', 'go', 'rust', 'java', 'ruby', 'lua' }
+            for _, lang in ipairs(test_langs) do
+                local ok, _ = pcall(vim.treesitter.language.add, lang)
+                if not ok then
+                    vim.notify('建议安装 ' .. lang .. ' treesitter解析器以获得最佳测试体验', vim.log.levels.INFO)
+                end
+            end
+        end,
     {
         'MagicDuck/grug-far.nvim',
         cmd = 'GrugFar',
@@ -369,7 +594,17 @@ return {{
                 enabled = true,
                 provider = 'deepseek',
                 api_key = os.getenv('DEEPSEEK_API_KEY'),
-                temperature = 0.3
+                temperature = 0.3,
+                -- GLM-4 支持
+                glm4 = {
+                    enabled = true,
+                    provider = 'glm4',
+                    api_key = os.getenv('ZHIPUAI_API_KEY') or '',
+                    api_url = 'https://open.bigmodel.cn/api/paas/v4',
+                    model = 'glm-4-flash',
+                    temperature = 0.3,
+                    max_tokens = 2048,
+                }
             },
             ui = {
                 border = 'rounded',
@@ -395,7 +630,6 @@ return {{
             }
         }
     },
-
     -- Git/协作类插件
     {
         'sindrets/diffview.nvim',
@@ -485,12 +719,22 @@ return {{
                 ai_assistant = {
                     enabled = true,
                     provider = 'claude',
-                    api_key = os.getenv('ANTHROPIC_API_KEY')
+                    api_key = os.getenv('ANTHROPIC_API_KEY'),
+                    temperature = 0.3,
+                    -- GLM-4 支持
+                    glm4 = {
+                    enabled = true,
+                    provider = 'glm4',
+                    api_key = os.getenv('GLM4_API_KEY') or '',
+                    api_url = 'https://open.bigmodel.cn/api/paas/v4',
+                    model = 'glm-4-flash',
+                    temperature = 0.3,
+                    max_tokens = 2048,
+                }
                 }
             }
         }
     },
-
     {
         'NeogitOrg/neogit',
         dependencies = {'nvim-lua/plenary.nvim', 'nvim-telescope/telescope.nvim', 'sindrets/diffview.nvim'},
@@ -517,6 +761,18 @@ return {{
                     enabled = true,
                     language = 'zh-CN', -- 支持 'en-US', 'zh-CN'
                     style = 'conventional' -- conventional, descriptive
+                },
+                -- GLM-4 支持
+                glm4 = {
+                    enabled = true,
+                    provider = 'glm4',
+                    api_key = os.getenv('GLM4_API_KEY') or '',
+                    api_url = 'https://open.bigmodel.cn/api/paas/v4',
+                    model = 'glm-4-flash',
+                    temperature = 0.3,
+                    max_tokens = 2048,
+                    language = 'zh-CN',
+                    style = 'conventional'
                 }
             },
             signs = {
@@ -568,7 +824,6 @@ return {{
             }
         }
     },
-
     {
         'eandrju/cellular-automaton.nvim',
         cmd = 'CellularAutomaton',
@@ -582,29 +837,8 @@ return {{
             desc = 'Make it Rain'
         }},
         config = function()
-            -- 可以自定义自动机规则
-            local gol = require('cellular-automaton').gol
-            require('cellular-automaton').register_automaton('custom_rule', {
-                update = function(grid)
-                    for i = 1, #grid do
-                        for j = 1, #grid[i] do
-                            local neighbors = gol.count_neighbors(grid, i, j)
-                            local cell = grid[i][j]
-
-                            -- 自定义规则
-                            if cell == '#' and (neighbors < 2 or neighbors > 3) then
-                                grid[i][j] = '.'
-                            elseif cell == '.' and neighbors == 3 then
-                                grid[i][j] = '#'
-                            end
-                        end
-                    end
-                    return grid
-                end,
-                init = function()
-                    return gol.init_grid(20, 20)
-                end
-            })
+            -- 新版 cellular-automaton 已移除 register_automaton，仅保留按键映射
+            -- 若未来插件恢复 API，可在此扩展
         end
     }
-}}
+}

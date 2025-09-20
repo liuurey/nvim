@@ -177,14 +177,17 @@ function M.setup_autocmds()
         end,
     })
     
-    -- 自动清理错误状态
+    -- 自动清理错误状态 - 使用 vim.schedule 避免闪烁
     vim.api.nvim_create_autocmd('VimEnter', {
         group = augroup,
         callback = function()
+            -- 延迟清理，避免启动时立即重绘导致的闪烁
             vim.defer_fn(function()
-                vim.cmd('silent! redraw')
-                vim.cmd('silent! messages clear')
-            end, 1000)
+                vim.schedule(function()
+                    vim.cmd('silent! redraw')
+                    vim.cmd('silent! messages clear')
+                end)
+            end, 100)
         end,
     })
     
@@ -206,30 +209,32 @@ end
 
 -- 最终优化
 function M.final_optimizations()
-    -- 延迟执行一些可能冲突的设置
+    -- 延迟最终优化，避免启动时的闪烁
     vim.defer_fn(function()
-        -- 确保所有插件都已加载后再进行最终优化
-        pcall(function()
-            -- 清理可能的错误状态
-            vim.cmd('silent! redraw')
-            
-            -- 确保关键键位映射正确
-            local key_mappings = {
-                { mode = "i", key = "<C-s>", cmd = "<Cmd>w<CR>", desc = "保存文件" },
-                { mode = "n", key = "<C-s>", cmd = "<Cmd>w<CR>", desc = "保存文件" },
-                { mode = "n", key = "<C-z>", cmd = "u", desc = "撤销" },
-                { mode = "n", key = "<C-y>", cmd = "<C-r>", desc = "重做" },
-            }
-            
-            for _, mapping in ipairs(key_mappings) do
-                vim.keymap.set(mapping.mode, mapping.key, mapping.cmd, { 
-                    desc = mapping.desc, 
-                    silent = true, 
-                    noremap = true 
-                })
-            end
+        vim.schedule(function()
+            -- 确保所有插件都已加载后再进行最终优化
+            pcall(function()
+                -- 清理可能的错误状态
+                vim.cmd('silent! redraw')
+                
+                -- 确保关键键位映射正确
+                local key_mappings = {
+                    { mode = "i", key = "<C-s>", cmd = "<Cmd>w<CR>", desc = "保存文件" },
+                    { mode = "n", key = "<C-s>", cmd = "<Cmd>w<CR>", desc = "保存文件" },
+                    { mode = "n", key = "<C-z>", cmd = "u", desc = "撤销" },
+                    { mode = "n", key = "<C-y>", cmd = "<C-r>", desc = "重做" },
+                }
+                
+                for _, mapping in ipairs(key_mappings) do
+                    vim.keymap.set(mapping.mode, mapping.key, mapping.cmd, { 
+                        desc = mapping.desc, 
+                        silent = true, 
+                        noremap = true 
+                    })
+                end
+            end)
         end)
-    end, 500)
+    end, 200)
 end
 
 return M
