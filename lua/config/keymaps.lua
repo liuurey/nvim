@@ -109,7 +109,8 @@ keymap.set("n", "<leader>t", function()
 end, { desc = "💻 横向终端" })
 
 -- 退出终端模式
--- keymap.set("t", "<C-x>", "<C-\\><C-n>", { desc = "退出终端模式" })
+keymap.set("t", "<C-x>", "<Cmd>quit<CR>", { desc = "退出终端模式" })
+keymap.set("t", "<C-b>", "<C-\\><C-n>", { desc = "退出终端模式" })
 
 
 
