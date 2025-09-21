@@ -18,19 +18,19 @@ local my_group = augroup("MyAutoCmds", {
 --------------------------------------------------
 -- 1. 终端设置优化
 --------------------------------------------------
--- autocmd("TermOpen", {
---   group = my_group,
---   desc = "终端自动进入插入模式并优化显示",
---   callback = function()
---     -- 自动进入插入模式
---     vim.cmd.startinsert()
---     -- 终端中禁用行号（原配置显示行号可能影响体验）
---     vim.opt_local.number = false
---     vim.opt_local.relativenumber = false
---     -- 额外添加：终端中禁用折行
---     vim.opt_local.wrap = false
---   end,
--- })
+autocmd("TermOpen", {
+  group = my_group,
+  desc = "终端自动进入插入模式并优化显示",
+  callback = function()
+    -- 自动进入插入模式
+    vim.cmd.startinsert()
+    -- 终端中禁用行号（原配置显示行号可能影响体验）
+    vim.opt_local.number = false
+    vim.opt_local.relativenumber = false
+    -- 额外添加：终端中禁用折行
+    vim.opt_local.wrap = false
+  end,
+})
 
 --------------------------------------------------
 -- 2. 自动格式化配置 (由 LazyVim + conform.nvim 统一管理，避免重复配置)
@@ -93,18 +93,18 @@ autocmd("BufReadPost", {
 --------------------------------------------------
 -- 4. 自动创建缺失的父目录
 --------------------------------------------------
--- autocmd("BufWritePre", {
---     group = my_group,
---     desc = "保存文件时自动创建缺失的父目录",
---     pattern = "*",
---     callback = function(args)
---         local dir = vim.fn.fnamemodify(args.file, ":p:h")
---         -- 检查目录是否存在，不存在则创建
---         if vim.fn.isdirectory(dir) == 0 then
---             vim.fn.mkdir(dir, "p") -- "p"表示创建多级目录
---         end
---     end
--- })
+autocmd("BufWritePre", {
+    group = my_group,
+    desc = "保存文件时自动创建缺失的父目录",
+    pattern = "*",
+    callback = function(args)
+        local dir = vim.fn.fnamemodify(args.file, ":p:h")
+        -- 检查目录是否存在，不存在则创建
+        if vim.fn.isdirectory(dir) == 0 then
+            vim.fn.mkdir(dir, "p") -- "p"表示创建多级目录
+        end
+    end
+})
 
 --------------------------------------------------
 -- 5. 文件类型特定配置

@@ -113,7 +113,17 @@ keymap.set("n", "<leader>Nc", function()
   vim.notify("📢 通知已清理", vim.log.levels.INFO)
 end, {desc = "📢 清理通知"})
 
--- ===== 文件搜索组 (<leader>f) =====
+-- 终端相关（使用 LazyVim 默认的 <leader>ft 或类似功能）
+-- 避免与主题切换冲突，使用不同的键位
+
+-- Termux特定终端命令
+keymap.set("n", "<leader>tt", function()
+    vim.cmd("split")
+    vim.cmd("terminal bash")
+    vim.cmd("resize 15")
+end, { desc = "💻 Termux终端" })
+
+-- ========== 数字递增递减和特殊模式 ==========
 keymap.set("n", "<leader>fg", function()
   if has_plugin("telescope") then
     cmd("Telescope live_grep")

@@ -1,93 +1,118 @@
-# 🚀 Personal Neovim Configuration
+# 🚀 Neovim 配置 - Termux/Android 优化版
 
-基于 LazyVim 的个人 Neovim 配置，提供现代化的开发体验和高效的编程环境。
+基于 LazyVim 的个人 Neovim 配置，专为 **Android Termux** 环境优化，提供现代化的开发体验和高效的移动编程环境。
 
-## ✨ 特性
+## ✨ 核心特性
 
-### 📦 核心功能
-- 🎯 **基于 LazyVim** - 使用现代化的 LazyVim 框架
-- 🔧 **LSP 集成** - 完整的语言服务器支持
-- 🧠 **智能补全** - 基于 blink.cmp 的高性能补全系统
-- 🎨 **语法高亮** - nvim-treesitter 提供精确的语法解析
-- 📁 **代码片段** - LuaSnip 驱动的智能代码片段
-- 🔍 **模糊搜索** - Telescope 提供强大的文件和内容搜索
+### 📱 Termux/Android 优化
+- 🔋 **性能优化** - 针对移动设备性能调优，减少内存占用
+- 📱 **触摸友好** - 优化的界面和键位，适配触摸操作
+- ⚡ **快速启动** - 懒加载插件系统，快速启动和响应
+- 🔧 **Termux 集成** - 深度集成 Termux 环境，支持 bash/zsh
+- 📶 **离线支持** - 优化的离线使用体验
+
+### 🎯 现代化开发环境
+- 🧠 **智能补全** - blink.cmp 高性能补全系统，Termux 优化
+- 🔍 **LSP 支持** - 完整的语言服务器支持，支持多种编程语言
+- 🎨 **语法高亮** - nvim-treesitter 精确语法解析，移动设备优化
+- 📁 **文件管理** - NvimTree 和 Telescope 文件浏览增强
+- 🐛 **调试支持** - nvim-dap 调试器，支持 Python/C++/Rust 等
 
 ### 🎮 增强功能
 - 🚪 **智能退出** - `<leader>Q` 快速退出，`:Q` 智能退出所有
-- 🎯 **键位优化** - 解决键位冲突，提供语义化快捷键
-- 📊 **启动页面** - Snacks dashboard 提供美观的启动界面
-- 🖼️ **图像支持** - Snacks.image 支持图像和图表渲染
-- 🔄 **自动命令** - 智能的文件处理和环境优化
-
-### 🛠️ 开发工具
-- 🐍 **Python 开发** - 完整的 Python 开发环境
-- 🔧 **C/C++ 支持** - clangd 提供的强大 C/C++ 支持
-- 🌐 **Web 开发** - JavaScript/TypeScript/HTML/CSS 支持
-- 📝 **文档编写** - Markdown/LaTeX 支持
-- 🦀 **Rust 开发** - 完整的 Rust 开发工具链
+- 🎯 **语义化键位** - 解决键位冲突，提供直观的快捷键
+- 📊 **启动界面** - Snacks dashboard 美观启动界面
+- 🖼️ **图像支持** - 支持图像和图表渲染（Termux 优化）
+- 🔄 **自动命令** - 智能文件处理和环境优化
 
 ## 📋 系统要求
 
-### 必须
+### 必须环境
+- **Android** 7.0+ 设备
+- **Termux** 最新版本
 - **Neovim** >= 0.9.0
-- **Git** - 用于插件管理
-- **Node.js** >= 16.x - 用于某些 LSP 服务器
-- **Python** >= 3.8 - 用于 Python 开发支持
+- **Git** - 插件管理
+- **zsh** 或 **bash** - Shell 环境
 
-### 推荐
-- **Rust & Cargo** - 用于某些 Rust 工具
-- **Go** >= 1.19 - 用于 Go 开发
-- **ripgrep** - 更快的文件搜索
-- **fd** - 更快的文件查找
+### 推荐工具
+- **Node.js** >= 16.x - JavaScript/TypeScript 支持
+- **Python** >= 3.8 - Python 开发和 LSP 支持
+- **ripgrep** - 快速文件搜索
+- **fd** - 快速文件查找
 
 ### 可选工具
-- **ImageMagick** - 图像处理支持
-- **Ghostscript** - PDF 文件支持
-- **Tectonic** - LaTeX 编译器
-- **Mermaid CLI** - 图表渲染
+- **Rust & Cargo** - Rust 开发
+- **Go** >= 1.19 - Go 开发
+- **C/C++ 编译器** - C/C++ 开发支持
 
-## 🚀 安装
+## 🚀 Termux 安装指南
 
-### 1. 备份现有配置
+### 1. Termux 环境准备
 ```bash
-mv ~/.config/nvim ~/.config/nvim.backup
+# 更新 Termux 包管理器
+pkg update && pkg upgrade
+
+# 安装必要工具
+pkg install git neovim zsh curl wget
+
+# 安装推荐工具（可选）
+pkg install nodejs python ripgrep fd-find
+
+# 安装 zsh（推荐）
+pkg install zsh
+chsh -s zsh
 ```
 
-### 2. 克隆此配置
+### 2. 备份现有配置
 ```bash
-git clone https://github.com/SantaChains/nvim.git ~/.config/nvim
+# 备份现有 Neovim 配置
+mv ~/.config/nvim ~/.config/nvim.backup 2>/dev/null || true
+mv ~/.local/share/nvim ~/.local/share/nvim.backup 2>/dev/null || true
+mv ~/.cache/nvim ~/.cache/nvim.backup 2>/dev/null || true
 ```
 
-### 3. 启动 Neovim
+### 3. 克隆配置
 ```bash
+# 进入配置目录
+cd ~
+
+# 使用 GitHub 原始地址
+git clone https://github.com/liuurey/nvim.git ~/.config/nvim
+```
+
+### 4. 首次启动
+```bash
+# 启动 Neovim（首次启动会自动安装插件）
 nvim
+
+# 等待插件安装完成（可能需要几分钟）
+# 安装完成后重启 Neovim
 ```
 
-首次启动时，LazyVim 会自动安装所有插件。
-
-### 4. 安装 LSP 服务器
+### 5. 安装 LSP 服务器
 在 Neovim 中运行：
 ```vim
 :Mason
 ```
-然后安装需要的语言服务器。
+选择需要的语言服务器进行安装。
 
-### 5. 安装 Treesitter 解析器
+### 6. 安装 Treesitter 解析器
 ```vim
 :TSInstallInfo
 ```
-选择并安装需要的语法解析器。
+选择需要的语法解析器进行安装。
 
-## ⌨️ 键位映射
+## ⌨️ 核心键位映射
 
-### 基础操作
+### 基础导航（移动优化）
 | 键位 | 功能 | 描述 |
 |------|------|------|
-| `<leader>Q` | 退出当前窗口 | 快速退出 |
-| `:Q` | 智能退出所有 | 检查未保存文件 |
-| `<leader>D` | 启动页面 | 打开 dashboard |
+| `<C-h/j/k/l>` | 窗口导航 | 快速切换窗口 |
+| `<A-h/l>` | 缓冲区切换 | 切换文件缓冲区 |
+| `<leader>h` | 取消高亮 | 清除搜索结果 |
+| `<leader>Q` | 智能退出 | 检查未保存文件 |
 
-### LSP 功能 (Programming)
+### LSP 功能组 (`<leader>p`)
 | 键位 | 功能 | 描述 |
 |------|------|------|
 | `<leader>pr` | 重命名符号 | LSP 重命名 |
@@ -95,42 +120,31 @@ nvim
 | `<leader>pd` | 跳转定义 | 跳转到定义 |
 | `<leader>pR` | 查找引用 | 查找所有引用 |
 | `<leader>ph` | 悬停信息 | 显示文档 |
-| `<leader>pi` | 跳转实现 | 跳转到实现 |
-| `<leader>ps` | 文档符号 | 文档符号列表 |
-| `<leader>pD` | 跳转声明 | 跳转到声明 |
 | `<leader>pf` | 格式化 | 格式化代码 |
-| `<leader>F` | 全局格式化 | 格式化代码 |
 
-### 诊断和调试
+### 搜索功能 (`<leader>f`)
 | 键位 | 功能 | 描述 |
 |------|------|------|
-| `<leader>dd` | 诊断列表 | 显示诊断信息 |
-| `<leader>db` | 缓冲区诊断 | 当前文件诊断 |
-| `<leader>dj` | 下一个诊断 | 跳转到下一个问题 |
-| `<leader>dk` | 上一个诊断 | 跳转到上一个问题 |
-| `<leader>de` | 诊断详情 | 显示详细诊断 |
+| `<leader>ff` | 文件搜索 | 查找文件 |
+| `<leader>fg` | 内容搜索 | 全局搜索 |
+| `<leader>fb` | 缓冲区列表 | 打开的文件 |
+| `<leader>fh` | 帮助搜索 | 搜索帮助文档 |
 
-### Python 调试
+### Termux 终端 (`<leader>t`)
 | 键位 | 功能 | 描述 |
 |------|------|------|
-| `<leader>pyb` | 切换断点 | 设置/移除断点 |
-| `<leader>pyc` | 继续执行 | 调试继续 |
+| `<leader>t` | 横向终端 | 打开 bash 终端 |
+| `<leader>tt` | Termux 终端 | 专用 Termux 集成 |
+| `<C-\>` | 切换终端 | ToggleTerm 浮动终端 |
 
-### 配置管理
+### 配置管理 (`<leader>C`)
 | 键位 | 功能 | 描述 |
 |------|------|------|
 | `<leader>Cc` | 编辑配置 | 编辑 init.lua |
 | `<leader>Cv` | 编辑键位 | 编辑键位配置 |
 | `<leader>Cp` | 编辑插件 | 编辑插件配置 |
-| `<leader>Cs` | 编辑片段 | 编辑代码片段 |
 | `<leader>Cr` | 重载配置 | 重新加载配置 |
-
-### 搜索和浏览
-| 键位 | 功能 | 描述 |
-|------|------|------|
-| `<leader>sss` | 全局搜索 | 内容搜索 |
-| `<leader>ssf` | 文件搜索 | 查找文件 |
-| `<leader>ssb` | 缓冲区列表 | 打开的文件 |
+| `<leader>Cm` | Mason 管理器 | 管理 LSP 服务器 |
 
 ## 📁 配置结构
 
@@ -139,65 +153,92 @@ nvim
 ├── init.lua                    # 主入口文件
 ├── lua/
 │   ├── config/
-│   │   ├── autocmds.lua        # 自动命令
-│   │   ├── keybindings.lua     # 键位映射
+│   │   ├── autocmds.lua        # 自动命令（Termux 优化）
+│   │   ├── keybindings.lua     # 核心键位映射
+│   │   ├── keymaps.lua         # 额外键位配置
 │   │   ├── lazy.lua            # 插件管理器配置
-│   │   └── options.lua         # Neovim 选项
+│   │   └── options.lua         # Neovim 选项（Termux 优化）
 │   └── plugins/
-│       ├── blink-cmp.lua       # 补全系统
-│       ├── essential.lua       # 核心插件
-│       ├── lsp-config.lua      # LSP 配置
+│       ├── blink-cmp.lua       # 补全系统（Termux 优化）
+│       ├── bufferline.lua      # 标签栏（Termux 优化）
+│       ├── community.lua       # 社区推荐插件
+│       ├── debugger.lua        # 调试器（Termux 适配）
+│       ├── dev-tools.lua       # 开发工具
+│       ├── editor-core.lua     # 编辑器核心功能
+│       ├── editor-design.lua   # 编辑器界面设计
+│       ├── lsp-config.lua      # LSP 配置（Termux 优化）
+│       ├── lsp-ui.lua          # LSP UI 增强
 │       ├── mason.lua           # LSP 管理器
-│       ├── quicker.lua         # 快速工具
-│       ├── snacks.lua          # UI 增强
-│       └── theme.lua           # 主题配置
+│       ├── snack.lua           # UI 增强
+│       ├── theme.lua           # 主题配置（Termux 优化）
+│       ├── treesitter.lua      # 语法高亮（Termux 优化）
+│       └── which-key.lua       # 键位提示
 ├── snippets/                   # 代码片段
 │   ├── lua.lua
 │   ├── python.lua
 │   └── ...
-└── LSP/                        # LSP 配置
+└── LSP/                        # 语言特定配置
     ├── python.lua
     ├── lua.lua
     └── ...
 ```
 
-## 🔧 自定义
+## 🔧 Termux 特定优化
 
-### 添加新的语言支持
-1. 在 `LSP/` 目录添加语言配置文件
-2. 在 `snippets/` 目录添加代码片段
-3. 更新 treesitter 配置以包含新语言
-4. 通过 Mason 安装相应的 LSP 服务器
+### 性能优化
+- **减少内存占用** - 优化插件加载策略
+- **降低 CPU 使用** - 智能的语法解析和补全策略
+- **快速响应** - 优化的更新时间和超时设置
+- **大文件处理** - 智能的大文件检测和优化
 
-### 修改键位映射
-编辑 `lua/config/keybindings.lua` 文件，按照现有模式添加或修改键位。
+### 界面优化
+- **触摸友好** - 更大的点击区域和触摸手势
+- **屏幕适配** - 适配各种屏幕尺寸
+- **色彩优化** - Termux 终端色彩优化
+- **字体支持** - 等宽字体和 Nerd Font 支持
 
-### 添加插件
-在 `lua/plugins/` 目录中创建新文件或修改现有文件，按照 lazy.nvim 的格式配置插件。
+### 功能优化
+- **终端集成** - 深度集成 Termux 终端
+- **Shell 支持** - 支持 bash 和 zsh
+- **路径处理** - 优化的路径解析和处理
+- **工具检测** - 智能的工具路径检测
 
-## 🛠️ 实用命令
+## 🛠️ 开发语言支持
 
-### Treesitter 管理
-- `:TSStatus` - 显示解析器状态
-- `:TSInstallLatex` - 安装 LaTeX 解析器
-- `:TSHealth` - 检查 Treesitter 健康状态
+### 🐍 Python 开发
+- **LSP 支持** - pyright/ruff 语言服务器
+- **调试支持** - debugpy 调试器
+- **格式化** - ruff/black 代码格式化
+- **代码片段** - 丰富的 Python 代码片段
 
-### 键位检查
-- `:ShowAllKeymaps` - 显示所有键位映射
-- `:ShowLeaderKeymaps` - 显示 Leader 键位
-- `:VerifyKeymapFix` - 验证键位修复
+### 🔧 C/C++ 开发
+- **LSP 支持** - clangd 语言服务器
+- **调试支持** - gdb/lldb 调试器
+- **格式化** - clang-format 代码格式化
+- **编译集成** - Makefile/CMake 支持
 
-### 系统检查
-- `:checkhealth` - 检查系统健康状态
-- `:checkhealth which-key` - 检查键位系统
-- `:checkhealth snacks` - 检查 UI 功能
+### 🌐 Web 开发
+- **JavaScript/TypeScript** - tsserver 支持
+- **HTML/CSS** - 完整的 Web 开发支持
+- **格式化** - prettier 代码格式化
+- **调试支持** - Chrome/Firefox 调试器
+
+### 📝 文档编写
+- **Markdown** - 完整的 Markdown 支持
+- **LaTeX** - LaTeX 文档编写支持
+- **实时预览** - 文档实时预览功能
+- **导出支持** - PDF/HTML 导出支持
 
 ## 🎨 主题和外观
 
-配置支持多种主题，默认使用现代化的配色方案。可以通过修改 `lua/plugins/theme.lua` 来自定义外观。
+配置支持多种主题，针对 Termux 环境优化：
+- **TokyoNight** - 深色主题，护眼模式
+- **Catppuccin** - 温暖色彩主题
+- **OneDark** - 经典 OneDark 主题
+- ** Gruvbox** - 复古风格主题
 
-### Neovide 支持
-如果使用 Neovide GUI，配置文件包含专门的 GUI 优化设置，包括：
+### Neovide GUI 支持（可选）
+如果使用 Neovide GUI，包含专门的优化设置：
 - 透明度控制
 - 动画效果
 - 字体配置
@@ -218,32 +259,50 @@ nvim
    :Mason
    ```
 
-3. **键位冲突**
+3. **性能问题**
    ```vim
-   :VerifyKeymapFix
+   :checkhealth
    ```
 
-4. **补全不工作**
-   ```vim
-   :checkhealth blink
+4. **Termux 特定问题**
+   ```bash
+   # 检查 Termux 版本
+   termux-info
+   
+   # 更新 Termux
+   pkg update && pkg upgrade
    ```
 
-### 日志查看
-- Lazy 插件日志：`:Lazy log`
-- LSP 日志：`:LspLog`
-- Neovim 消息：`:messages`
+### Termux 性能调优
 
-## 📊 性能优化
+```bash
+# 优化 Termux 性能
+termux-wake-lock  # 防止休眠
 
-配置包含多项性能优化：
-- 懒加载插件系统
-- 高性能补全引擎
-- 优化的启动时间
-- 智能文件处理
+# 设置合适的内存限制
+export MALLOC_ARENA_MAX=2
+
+# 优化 Git 性能
+git config --global core.preloadindex true
+git config --global core.fscache true
+git config --global gc.auto 256
+```
+
+## 📊 性能监控
+
+配置包含多项性能监控和优化：
+- 启动时间监控
+- 内存使用监控
+- 插件性能分析
+- 大文件优化
 
 ## 🤝 贡献
 
-欢迎提交 Issues 和 Pull Requests 来改进这个配置！
+欢迎提交 Issues 和 Pull Requests 来改进这个配置！特别欢迎：
+- Termux 环境优化建议
+- 移动设备使用体验改进
+- 性能优化方案
+- 新的语言支持
 
 ## 📄 许可证
 
@@ -251,13 +310,14 @@ nvim
 
 ## 🙏 致谢
 
-感谢以下项目：
+感谢以下项目和社区：
 - [LazyVim](https://github.com/LazyVim/LazyVim) - 现代 Neovim 配置框架
+- [Termux](https://termux.dev/) - Android 终端模拟器
 - [folke/lazy.nvim](https://github.com/folke/lazy.nvim) - 插件管理器
 - [Saghen/blink.cmp](https://github.com/Saghen/blink.cmp) - 高性能补全
 - [nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter) - 语法解析
-- 以及所有其他优秀的插件开发者们
+- 以及所有为移动开发环境贡献的开发者们
 
 ---
 
-⭐ 如果这个配置对您有帮助，请给个星星！
+⭐ 如果这个配置对您有帮助，请给个星星支持！分享您在 Termux 上的开发体验！

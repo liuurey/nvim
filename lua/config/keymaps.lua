@@ -104,7 +104,8 @@ keymap.set("n", "<leader>gh", "G$", { desc = "跳转末行末" })
 keymap.set("n", "<leader>t", function()
     -- 先分割窗口，然后在新窗口中打开终端
     vim.cmd("split")
-    vim.cmd("terminal pwsh.exe -NoLogo")
+    -- 在Termux环境中使用bash而不是pwsh
+    vim.cmd("terminal bash")
     vim.cmd("resize 15")
 end, { desc = "💻 横向终端" })
 

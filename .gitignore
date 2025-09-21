@@ -54,9 +54,5 @@ __pycache__/
 *.dll
 *.exe
 
-# 个人自定义（按需启用可移除注释）
-# core/
-# backup/
-
 # 包含 ai.lua 名字的文件（防止 AI 密钥/缓存泄漏）
 *ai.lua

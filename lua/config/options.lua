@@ -47,12 +47,12 @@ opt.signcolumn = "yes"
 
 --------------------------------------------
 
--- 禁用未使用的插件提供程序（保留Python3以支持依赖插件）
+-- 禁用未使用的插件提供程序（在Termux环境中保留Python3支持）
 vim.g.loaded_perl_provider = 0
 vim.g.loaded_ruby_provider = 0
 vim.g.loaded_node_provider = 0
--- 移除Python3，可能影响依赖插件
-vim.g.loaded_python3_provider = 0
+-- 在Termux环境中启用Python3提供程序以支持依赖插件
+-- vim.g.loaded_python3_provider = 0
 
 --------------------------------------------
 
@@ -79,6 +79,10 @@ opt.titlestring = "%t - NVIM"
 
 -- 平滑滚动（直接启用，低版本会自动忽略）
 opt.smoothscroll = true
+
+-- Termux特定优化
+-- 在Termux环境中增加更新时间以提高性能
+opt.updatetime = 300
 
 -- ⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️废弃
 -------------------------------------------
