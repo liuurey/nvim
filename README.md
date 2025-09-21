@@ -268,6 +268,8 @@ nvim
    ```bash
    # 检查 Termux 版本
    termux-info
+   # 或者安装 fastfetvh
+   fastfetch
    
    # 更新 Termux
    pkg update && pkg upgrade
